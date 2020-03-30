@@ -1,0 +1,101 @@
+package com.espotify.controller;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import com.espotify.dao.UsuarioDAO;
+
+/**
+ * @author Grupo 1_1
+ * Servlet implementation class UsuarioServlet
+ */
+@WebServlet("/Modinfo_UsuarioServlet")
+public class Modinfo_UsuarioServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public Modinfo_UsuarioServlet() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		//HttpSession session = request.getSession();
+		//String aux_email = (String) session.getAttribute("correo");
+		String aux_email = (String) request.getParameter("email"); // PRUEBA - BORRAR
+		String action = request.getParameter("accion");
+		
+		if(action == null) {action = "";}
+		else if(action == "modnombre") {
+			// valores de los campos del jsp
+			String nom = (String) request.getParameter("nombre");
+			
+			if(!nom.equals("")) {
+				UsuarioDAO.cambiar_info(aux_email, "nombre", nom);
+				
+				// Actualizamos datos de la sesión
+				//session.setAttribute("usuario", nom);
+				
+				//request.getRequestDispatcher("usuario.jsp").forward(request, response);
+				//response.sendRedirect("usuario.jsp?ok=");
+			}
+			else { // El campo está vacío
+				response.sendRedirect("perfil.jsp?error1="); // Error indicando campos incorrectos
+			}
+		}
+		else if(action == "modemail") {
+			// valores de los campos del jsp
+			String email =(String) request.getParameter("email");
+
+			if(!email.equals("")) {
+				UsuarioDAO.cambiar_info(aux_email, "mail", email);
+				
+				// Actualizamos datos de la sesión
+				//session.setAttribute("correo", email);
+				
+				//request.getRequestDispatcher("usuario.jsp").forward(request, response);
+				//response.sendRedirect("usuario.jsp?ok=");
+			}
+			else { // El campo está vacío
+				response.sendRedirect("perfil.jsp?error1="); // Error indicando campos incorrectos
+			}
+		}
+		else if(action == "moddescripcion") {
+			// valores de los campos del jsp
+			String descripcion =(String) request.getParameter("descripcion");
+	
+			if(!descripcion.equals("")) {
+				UsuarioDAO.cambiar_info(nom,"descripcion",descripcion);
+				
+				// Actualizamos datos de la sesión
+				//session.setAttribute("descripcion", descripcion);
+				
+				//request.getRequestDispatcher("usuario.jsp").forward(request, response);
+				//response.sendRedirect("usuario.jsp?ok=");
+			}
+			else { // El campo está vacío
+				response.sendRedirect("perfil.jsp?error1="); // Error indicando campos incorrectos
+			}
+		}
+		
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		doGet(request, response);
+	}
+
+}
