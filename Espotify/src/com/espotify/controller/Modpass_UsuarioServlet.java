@@ -31,7 +31,8 @@ public class Modpass_UsuarioServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession();
-		String id = (String) session.getAttribute("ID");
+		//String id = (String) session.getAttribute("ID");
+		String id = (String) request.getParameter("id"); // PRUEBA - BORRAR
 		
 		// valores de los campos del jsp
 		String pass1 = (String) request.getParameter("contrasena1");
