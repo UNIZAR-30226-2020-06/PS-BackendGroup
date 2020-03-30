@@ -7,6 +7,7 @@ import java.sql.SQLException;
 
 import com.espotify.model.ConnectionManager;
 import com.espotify.model.Usuario;
+import com.mysql.cj.jdbc.Blob;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -40,7 +41,10 @@ public class UsuarioDAO {
 			ps.setString(3, nombre);
 			
 			String pass_HASH = convertirSHA256(contrasena);
-			ps.setString(4, pass_HASH);
+			Blob blob = (Blob) conn.createBlob();
+			blob.setBytes(1, pass_HASH.getBytes());
+			
+			ps.setBlob(4, blob);
 			
 			ps.executeUpdate();
 			
@@ -103,10 +107,16 @@ public class UsuarioDAO {
 			PreparedStatement ps = conn.prepareStatement(UPDATE_PASS_QUERY);
 
 			String pass1_HASH = convertirSHA256(pass1); // password actual
+			Blob blob1 = (Blob) conn.createBlob();
+			blob1.setBytes(1, pass1_HASH.getBytes());
+			
 			String pass2_HASH = convertirSHA256(pass2); // password nuevo
-			ps.setString(1, pass2_HASH);
+			Blob blob2 = (Blob) conn.createBlob();
+			blob2.setBytes(1, pass2_HASH.getBytes());
+			
+			ps.setBlob(1, blob2);
 			ps.setString(2, id);
-			ps.setString(3, pass1_HASH);
+			ps.setBlob(3, blob1);
 	
 			ps.executeUpdate();
 			
@@ -154,7 +164,10 @@ public class UsuarioDAO {
 			
 			// ciframos la contraseña con HASH256
 			String pass_HASH = convertirSHA256(contrasena);
-			ps.setString(2, pass_HASH);
+			Blob blob = (Blob) conn.createBlob();
+			blob.setBytes(1, pass_HASH.getBytes());
+			
+			ps.setBlob(2, blob);
 			
 			ResultSet rs = ps.executeQuery();
 
