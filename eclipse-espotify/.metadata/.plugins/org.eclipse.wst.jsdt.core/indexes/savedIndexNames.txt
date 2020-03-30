@@ -1,7 +1,0 @@
-INDEX VERSION 1.4+C:\Users\patri\eclipse-espotify\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
-3085390545.index
-1949392644.index
-573502440.index
-1744277363.index
-2066197826.index
-1568737145.index

@@ -1,3 +1,0 @@
-INDEX VERSION 1.131
-C:\Users\patri\eclipse-espotify\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\850573271.index
-\Espotify\src

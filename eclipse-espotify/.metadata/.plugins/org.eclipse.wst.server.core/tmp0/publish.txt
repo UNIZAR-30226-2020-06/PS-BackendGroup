@@ -1,3 +1,0 @@
-#Tomcat publish data
-#Mon Mar 23 15:08:02 CET 2020
-org.eclipse.jst.jee.server\:Espotify=C\:\\xampp\\tomcat\\wtpwebapps\\Espotify
