@@ -49,6 +49,15 @@
 		<url-pattern>/modpass</url-pattern>
 	</servlet-mapping>
 	
+	<servlet>
+		<servlet-name>subir_cancion</servlet-name>
+		<servlet-class>com.espotify.controller.SubirCancionServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>subir_cancion</servlet-name>
+		<url-pattern>/subir_cancion</url-pattern>
+	</servlet-mapping>
+	
 	
 	<context-param>
     <param-name>directorio_ficheroTmp</param-name>

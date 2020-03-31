@@ -69,15 +69,15 @@ public class SubirAudio_Servlet extends HttpServlet {
 				getServletContext().log("FieldName="+fileItem.getFieldName());
 				getServletContext().log("FileName="+fileItem.getName());
 				getServletContext().log("Contenido="+fileItem.getContentType());
-				getServletContext().log("Tamaño (B)="+fileItem.getSize());
+				getServletContext().log("Tamaï¿½o (B)="+fileItem.getSize());
 				//getServletContext().log("Directorio fichero: " + request.getServletContext().getAttribute("FILES_DIR"));
 				getServletContext().log("Nombre fichero: " + fileItem.getName());
 				
-				String rutaAudio = "ALMACEN_PATH" + lastId + ".mp3";
+				String rutaAudio = ALMACEN_PATH + lastId + ".mp3";
 				
 				getServletContext().log("Ruta audio: " + rutaAudio);
 				
-				File ficheroAudio = new File(ALMACEN_PATH + lastId + ".mp3");
+				File ficheroAudio = new File(rutaAudio);
 				getServletContext().log("Absolute Path at server="+ficheroAudio.getAbsolutePath());
 				
 				fileItem.write(ficheroAudio);
@@ -86,8 +86,8 @@ public class SubirAudio_Servlet extends HttpServlet {
 				ficheroAudio.setExecutable(true, false);
 				ficheroAudio.setWritable(true, false);
 				
-				out.write("File "+fileItem.getName()+ " subido correctamente. ");
-				out.write("<br>");
+				request.setAttribute("ruta", rutaAudio);
+				request.getRequestDispatcher("subirCancion.jsp").forward(request, response);
 				//out.write("<a href=\"UploadDownloadFileServlet?fileName="+fileItem.getName()+"\">Download "+fileItem.getName()+"</a>");
 			}
 		} catch (FileUploadException e) {
