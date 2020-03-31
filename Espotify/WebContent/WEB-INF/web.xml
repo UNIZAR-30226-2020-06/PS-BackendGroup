@@ -48,4 +48,10 @@
 		<servlet-name>Usuario_modpass</servlet-name>
 		<url-pattern>/modpass</url-pattern>
 	</servlet-mapping>
+	
+	
+	<context-param>
+    <param-name>directorio_ficheroTmp</param-name>
+    <param-value>tmpfiles</param-value>
+  </context-param>
 </web-app>
