@@ -58,6 +58,23 @@
 		<url-pattern>/subir_cancion</url-pattern>
 	</servlet-mapping>
 	
+	<servlet>
+		<servlet-name>modificar_cancion</servlet-name>
+		<servlet-class>com.espotify.controller.ModificarInfo_CancionServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>modificar_cancion</servlet-name>
+		<url-pattern>/modificar_cancion</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>eliminar_cancion</servlet-name>
+		<servlet-class>com.espotify.controller.Eliminar_CancionServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>eliminar_cancion</servlet-name>
+		<url-pattern>/eliminar_cancion</url-pattern>
+	</servlet-mapping>
 	
 	<context-param>
     <param-name>directorio_ficheroTmp</param-name>

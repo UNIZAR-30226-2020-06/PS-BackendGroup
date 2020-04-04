@@ -13,12 +13,15 @@ public class CancionDAO {
 	private static String nombreAutor = null;
 	
 	private final static String INSERT_QUERY = "INSERT INTO Reproductor_musica.Audio (titulo, usuario, genero, url) VALUES (?,?,?, ?)";
-	private final static String GET_ID_GENERO_QUERY = "SELECT g.id FROM Reproductor_musica.Genero g WHERE nombre = ?";
+	private final static String GET_ID_GENERO_QUERY = "SELECT g.id FROM Reproductor_musica.Genero g WHERE g.nombre = ? AND g.tipo = 'cancion'";
 	private final static String GET_ID_AUTOR_QUERY = "SELECT a.id FROM Reproductor_musica.Usuario a WHERE nombre = ?";
 	private final static String INSERT_URL_QUERY = "UPDATE Reproductor_musica.Audio SET url = ? WHERE id = ?";
 	private final static String DELETE_QUERY = "DELETE FROM Reproductor_musica.Audio WHERE id = ?";
 	private final static String GET_ID_CANCION_QUERY = "SELECT a.id FROM Reproductor_musica.Audio a WHERE titulo = ?";
 	private final static String GET_ID_ULTIMA_CANCION_QUERY = "SELECT a.id FROM Reproductor_musica.Audio a ORDER BY a.id DESC LIMIT 1";
+	private final static String UPDATE_QUERY = "UPDATE Reproductor_musica.Audio SET titulo = ?, genero = ? WHERE id = ?";
+	private final static String GET_NOMBRE_AUTOR_QUERY = "SELECT a.nombre FROM Reproductor_musica.Usuario a WHERE a.id = ?";
+	private final static String GET_NOMBRE_GENERO_QUERY = "SELECT g.nombre FROM Reproductor_musica.Genero g WHERE g.id = ? AND g.tipo = 'cancion'";
 
 	
 	public int subirCancion(String titulo, String autor, String genero, String ruta) {
@@ -54,13 +57,11 @@ public class CancionDAO {
 	}
 	
 	
-	public boolean borrarCancion(String titulo, int id) {
+	public boolean borrarCancion(int id) {
 		Connection conn;
 		try {
 			conn = ConnectionManager.getConnection();
 			PreparedStatement ps = conn.prepareStatement(DELETE_QUERY);
-			if (id == 0)
-				id = obtenerIdCancion(titulo);
 			ps.setInt(1, id);
 			
 			ps.executeUpdate();
@@ -74,17 +75,18 @@ public class CancionDAO {
 		}	
 	}
 	
-	public boolean modificarCancion(String titulo, String genero){
+	public boolean modificarCancion(String titulo, String genero, int id){
 		Connection conn;
 		int id_genero = obtenerIDGenero(genero);
 		try {
 			conn = ConnectionManager.getConnection();
-			PreparedStatement ps = conn.prepareStatement(INSERT_QUERY);
-			
+			PreparedStatement ps = conn.prepareStatement(UPDATE_QUERY);
 			ps.setString(1, titulo);
 			ps.setInt(2, id_genero);
-			ps.setInt(3, 3);
-			
+			ps.setInt(3, id);
+			System.out.println(titulo);
+			System.out.println(id);
+			System.out.println(id_genero);
 			ps.executeUpdate();
 			
 			ConnectionManager.releaseConnection(conn);
@@ -96,6 +98,46 @@ public class CancionDAO {
 		}	
 	}
 	
+	
+	public String obtenerNombreAutor(int id_autor) {
+		System.out.println("obtenerIDCancion Entro +++++++++++++++++");
+		Connection conn;
+		try {
+			conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(GET_NOMBRE_AUTOR_QUERY);
+			ps.setInt(1, id_autor);
+			ResultSet rs = ps.executeQuery();
+			String nombre = null;
+			while(rs.next())
+				nombre = rs.getString(1);
+			ConnectionManager.releaseConnection(conn);
+			return nombre;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error al obtener el id de la canción");
+			return null;
+		}
+	}
+	
+	public String obtenerNombreGenero(int id_genero) {
+		System.out.println("obtenerIDCancion Entro +++++++++++++++++");
+		Connection conn;
+		try {
+			conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(GET_NOMBRE_GENERO_QUERY);
+			ps.setInt(1, id_genero);
+			ResultSet rs = ps.executeQuery();
+			String nombre = null;
+			while(rs.next())
+				nombre = rs.getString(1);
+			ConnectionManager.releaseConnection(conn);
+			return nombre;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error al obtener el id de la canción");
+			return null;
+		}
+	}
 	
 	private int obtenerIDGenero(String genero) {
 		Connection conn;
@@ -113,6 +155,7 @@ public class CancionDAO {
 				id_autor = rs.getInt(1);
 			}
 			ConnectionManager.releaseConnection(conn);
+			System.out.println("CONSIGO ID GENERO");
 			
 			return id_autor;
 		} catch (SQLException e) {
@@ -195,22 +238,22 @@ public class CancionDAO {
 		}
 	}
 		
-		private int obtenerUltimaCancion() {
-			System.out.println("obtenerIDCancion Entro +++++++++++++++++");
-			Connection conn;
-			try {
-				conn = ConnectionManager.getConnection();
-				PreparedStatement ps = conn.prepareStatement(GET_ID_ULTIMA_CANCION_QUERY);				
-				ResultSet rs = ps.executeQuery();
-				int id = 0;
-				while(rs.next())
-					id = rs.getInt(1);
-				ConnectionManager.releaseConnection(conn);
-				return id;
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				System.out.println("Error al obtener el id de la canción");
-				return 0;
-			}
+	private int obtenerUltimaCancion() {
+		System.out.println("obtenerIDCancion Entro +++++++++++++++++");
+		Connection conn;
+		try {
+			conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(GET_ID_ULTIMA_CANCION_QUERY);				
+			ResultSet rs = ps.executeQuery();
+			int id = 0;
+			while(rs.next())
+				id = rs.getInt(1);
+			ConnectionManager.releaseConnection(conn);
+			return id;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error al obtener el id de la canción");
+			return 0;
+		}
 	}
 }
