@@ -18,7 +18,7 @@ public class ConnectionManager {
 
 		try{
 			Class.forName(JDBC_DRIVER);
-			System.out.println("Connecting to database...");
+			System.out.println("Connecting to database... NEW!");
 			conn = DriverManager.getConnection(DB_URL,USER,PASS);
 			return conn;
 		} catch (Exception e) {

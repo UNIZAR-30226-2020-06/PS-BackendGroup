@@ -76,8 +76,25 @@
 		<url-pattern>/eliminar_cancion</url-pattern>
 	</servlet-mapping>
 	
+	<servlet>
+		<servlet-name>android_testing</servlet-name>
+		<servlet-class>com.espotify.controller.AndroidTesting</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>android_testing</servlet-name>
+		<url-pattern>/android_testing</url-pattern>
+	</servlet-mapping>
+	
 	<context-param>
     <param-name>directorio_ficheroTmp</param-name>
     <param-value>tmpfiles</param-value>
   </context-param>
+  
+  <context-param>
+    <param-name>directorio_ficheroTmp</param-name>
+    <param-value>tmpfiles</param-value>
+  </context-param>
+  
+  
+  
 </web-app>
