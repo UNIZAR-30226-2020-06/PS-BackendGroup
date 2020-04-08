@@ -16,6 +16,7 @@ import com.espotify.model.ListaReproduccion;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Collections;
 
 /**
  * Servlet implementation Servlet
@@ -38,10 +39,16 @@ public class GetInfo_ListaRepServlet extends HttpServlet {
 		String nombre = request.getParameter("nombre");
 		String usuario = request.getParameter("usuario");
 		String tipo = request.getParameter("tipo");
+		String aleatorio = request.getParameter("aleatorio");
+		
 		try{
 			ListaReproduccion infoLista = new ListaReproduccionDAO().getInfoList(nombre,usuario,tipo);
 			List<Audio> audios = new ListaReproduccionDAO().getAudios(nombre,usuario,tipo);
-
+			
+			if (aleatorio.equals("si")) {
+				Collections.shuffle(audios);
+			}
+			
 			HttpSession session = request.getSession();
 			session.setAttribute("infoLista", infoLista);
 			session.setAttribute("audios", audios);
