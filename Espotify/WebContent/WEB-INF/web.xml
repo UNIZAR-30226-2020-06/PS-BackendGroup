@@ -20,6 +20,17 @@
 	</servlet-mapping>
 	
 	
+	  <servlet>
+		<servlet-name>AndroidVal_UsuarioServlet</servlet-name>
+		<servlet-class>com.espotify.controller.AndroidVal_UsuarioServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AndroidVal_UsuarioServlet</servlet-name>
+		<url-pattern>/validacion_android</url-pattern>
+	</servlet-mapping>
+	
+	
+	
 	<servlet>
 		<servlet-name>Usuario_modinfo</servlet-name>
 		<servlet-class>com.espotify.controller.Modinfo_UsuarioServlet</servlet-class>
