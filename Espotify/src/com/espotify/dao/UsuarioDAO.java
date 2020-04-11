@@ -7,17 +7,22 @@ import java.sql.SQLException;
 
 import com.espotify.model.ConnectionManager;
 import com.espotify.model.Usuario;
+import com.mysql.cj.jdbc.Blob;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class UsuarioDAO {
-	private final static String INSERT_QUERY = "INSERT INTO Reproductor_musica.Usuario (mail, descripcion, nombre, password, id) VALUES (?,?,?,?,0)";
+	private final static String INSERT_QUERY = "INSERT INTO Reproductor_musica.Usuario (mail, descripcion, nombre, password, imagen) VALUES (?,?,?,?,null)";
+	private final static String INSERT_IMG_QUERY = "UPDATE Reproductor_musica.Usuario SET imagen=? WHERE mail = ?";
 	private final static String UPDATE_NOM_QUERY = "UPDATE Reproductor_musica.Usuario SET nombre=? WHERE id = ?";
 	private final static String UPDATE_DES_QUERY = "UPDATE Reproductor_musica.Usuario SET descripcion=? WHERE id = ?";
 	private final static String UPDATE_MAIL_QUERY = "UPDATE Reproductor_musica.Usuario SET mail=? WHERE id = ?";
+	private final static String UPDATE_IMG_QUERY = "UPDATE Reproductor_musica.Usuario SET imagen=? WHERE id = ?";
 	private final static String UPDATE_PASS_QUERY = "UPDATE Reproductor_musica.Usuario SET password=? WHERE id = ? AND password=?";
-	private final static String LOGIN_QUERY = "SELECT nombre, descripcion, mail, id FROM Reproductor_musica.Usuario WHERE mail = ? AND password = ?";
+	private final static String LOGIN_QUERY = "SELECT nombre, descripcion, mail, id, imagen FROM Reproductor_musica.Usuario WHERE mail = ? AND password = ?";
 	
 	
 	/**
@@ -29,7 +34,7 @@ public class UsuarioDAO {
 	 * @return
 	 */
 	
-	public boolean register(String nombre,String email, String contrasena, String descripcion) {
+	public static boolean register(String nombre,String email, String contrasena, String descripcion, String imagen) {
 		
 		try {
 			Connection conn = ConnectionManager.getConnection();
@@ -41,8 +46,16 @@ public class UsuarioDAO {
 			
 			String pass_HASH = convertirSHA256(contrasena);
 			ps.setString(4, pass_HASH);
-			
 			ps.executeUpdate();
+			
+			if(imagen != null && !imagen.equals("")) {
+				FileInputStream imagenBinaria = new FileInputStream(imagen);
+				ps = conn.prepareStatement(INSERT_IMG_QUERY);
+				ps.setBlob(1, imagenBinaria);
+				ps.setString(2, email);
+				ps.executeUpdate();
+				imagenBinaria.close();
+			}
 			
 			ConnectionManager.releaseConnection(conn);
 			return true;
@@ -56,7 +69,7 @@ public class UsuarioDAO {
 		return false;
 	}
 
-	public static boolean cambiar_info(String nombre, String descripcion, String email, String id) {
+	public static boolean cambiar_info(String nombre, String descripcion, String email, String id, String imagen) {
 	
 		try {
 			Connection conn = ConnectionManager.getConnection();
@@ -69,19 +82,28 @@ public class UsuarioDAO {
 				ps.setString(2, id);
 				ps.executeUpdate();
 			}
-			else if(descripcion != null) {
+			if(descripcion != null) {
 				ps = conn.prepareStatement(UPDATE_DES_QUERY);
 				
 				ps.setString(1, descripcion);
 				ps.setString(2, id);
 				ps.executeUpdate();
 			}
-			else if(email != null && !email.equals("")) {
+			if(email != null && !email.equals("")) {
 				ps = conn.prepareStatement(UPDATE_MAIL_QUERY);
 				
 				ps.setString(1, email);
 				ps.setString(2, id);
 				ps.executeUpdate();
+			}
+			if(imagen != null && !imagen.equals("")) {
+				ps = conn.prepareStatement(UPDATE_IMG_QUERY);
+				FileInputStream imagenBinaria = new FileInputStream(imagen);
+				
+				ps.setBlob(1, imagenBinaria);
+				ps.setString(2, id);
+				ps.executeUpdate();
+				imagenBinaria.close();
 			}
 	
 			ConnectionManager.releaseConnection(conn);
@@ -144,7 +166,7 @@ public class UsuarioDAO {
 	}
 	
 	
-	public Usuario login(String email, String contrasena) {
+	public static Usuario login(String email, String contrasena) {
 		Usuario result = null;
 		try {
 
@@ -152,14 +174,14 @@ public class UsuarioDAO {
 			PreparedStatement ps = conn.prepareStatement(LOGIN_QUERY);
 			ps.setString(1, email);
 			
-			// ciframos la contraseña con HASH256
+			// ciframos la contraseï¿½a con HASH256
 			String pass_HASH = convertirSHA256(contrasena);
 			ps.setString(2, pass_HASH);
 			
 			ResultSet rs = ps.executeQuery();
 
 			if(rs.first()){
-				result = new Usuario(rs.getString("nombre"),rs.getString("descripcion"), rs.getString("mail"), rs.getString("id"));
+				result = new Usuario(rs.getString("nombre"),rs.getString("descripcion"), rs.getString("mail"), rs.getString("id"), (Blob) rs.getBlob("imagen"));
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -171,5 +193,20 @@ public class UsuarioDAO {
 		
 		return result;
 	}
+	
+	// Prubas con la base de datos
+ 	public static void main(String[] args) throws SQLException, IOException{
+ 		/*
+ 		boolean creado = register("dav","dav@unizar.es","david_password123","descripcion del usuario","/Users/davidallozatejero/downloads/user2.jpg");
+ 		if (creado) System.out.println("Creado user");
+ 		
+ 		boolean modificada = cambiar_info("David AllTej", "asasasas","davidAT@gmail.com","18","/Users/davidallozatejero/downloads/user1.png");
+ 		if (modificada) System.out.println("Modif user");
+ 		
+ 		Usuario u = login("davidAT@gmail.com","david_password123");
+ 		System.out.println(u.getNombre());
+ 		System.out.println(u.getDescripcion());
+ 		*/
+ 	}
 }
 

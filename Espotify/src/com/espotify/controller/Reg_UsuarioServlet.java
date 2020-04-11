@@ -34,16 +34,17 @@ public class Reg_UsuarioServlet extends HttpServlet {
 		String nombre = request.getParameter("nombre");
 		String email = request.getParameter("email");
 		String contrasena = request.getParameter("contrasena");
-		String password = request.getParameter("password"); // confirmación de la contraseña
+		String password = request.getParameter("password"); // confirmaciï¿½n de la contraseï¿½a
 		String description = request.getParameter("descripcion");
+		String imagen = request.getParameter("imagen");
 		
 		if(!contrasena.equals(password)){
 			response.sendRedirect("registrar.jsp?error1=password_distinto");
 		}
 		else{
-			boolean reg = new UsuarioDAO().register(nombre,email,contrasena,description);
+			boolean reg = new UsuarioDAO().register(nombre,email,contrasena,description,imagen);
 			if(reg) {
-				// No se guarda ninguna sesión, para ello después de registrarse necesita iniciar sesión
+				// No se guarda ninguna sesiï¿½n, para ello despuï¿½s de registrarse necesita iniciar sesiï¿½n
 				//HttpSession session = request.getSession();
 				//session.setAttribute("nombre", nombre);
 				//session.setAttribute("email", email);

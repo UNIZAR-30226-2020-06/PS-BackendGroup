@@ -43,11 +43,12 @@ public class Val_UsuarioServlet extends HttpServlet {
 			session.setAttribute("nombre", u.getNombre());
 			session.setAttribute("email", u.getCorreo());
 			session.setAttribute("descripcion", u.getDescripcion());
+			session.setAttribute("imagen", u.getImagen()); // Imagen en formato Blob (binario)
 			
 			//request.getRequestDispatcher( "index_in.jsp" ).forward( request, response );
 			//response.sendRedirect("index.jsp");
 		}else {
-			//response.getWriter().println("<div class='popup' id='popup'><a href='#' id='btn-cerrar-popup' class='btn-cerrar-popup'><i class='fas fa-times'></i></a><h3>Datos incorrectos</h3><h4>Email o contraseña incorrectos, inténtelo de nuevo.</h4><form action=''><div class='contenedor-inputs'></div><input type='submit' class='btn-cerrar-popup' value='Entendido'></form></div>");
+			//response.getWriter().println("<div class='popup' id='popup'><a href='#' id='btn-cerrar-popup' class='btn-cerrar-popup'><i class='fas fa-times'></i></a><h3>Datos incorrectos</h3><h4>Email o contraseï¿½a incorrectos, intï¿½ntelo de nuevo.</h4><form action=''><div class='contenedor-inputs'></div><input type='submit' class='btn-cerrar-popup' value='Entendido'></form></div>");
 			response.sendRedirect("validacion.jsp?p=error");
 		}
 	}

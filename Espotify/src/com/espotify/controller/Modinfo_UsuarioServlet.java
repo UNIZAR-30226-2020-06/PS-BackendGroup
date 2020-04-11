@@ -1,5 +1,6 @@
 package com.espotify.controller;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -38,14 +39,20 @@ public class Modinfo_UsuarioServlet extends HttpServlet {
 		String nom = (String) request.getParameter("nombre");
 		String descripcion =(String) request.getParameter("descripcion");
 		String email =(String) request.getParameter("email");
+		String imagen =(String) request.getParameter("imagen");
 
-		boolean ok = UsuarioDAO.cambiar_info(nom,descripcion,email,id);
+		boolean ok = UsuarioDAO.cambiar_info(nom,descripcion,email,id,imagen);
 		
 		if(ok) {
-			// Actualizamos datos de la sesión
+			// Actualizamos datos de la sesiï¿½n
 			if(nom != null && !nom.equals("")) session.setAttribute("usuario", nom);
-			else if(email != null && !email.equals("")) session.setAttribute("email", email);
-			else if(descripcion != null) session.setAttribute("descripcion", descripcion);
+			if(email != null && !email.equals("")) session.setAttribute("email", email);
+			if(descripcion != null) session.setAttribute("descripcion", descripcion);
+			if(imagen != null && !imagen.equals("")) {
+				FileInputStream imagenBinaria = new FileInputStream(imagen);
+				session.setAttribute("imagen", imagenBinaria); // Se pasa la imagen como un Blob
+				imagenBinaria.close();
+			}
 			
 			//request.getRequestDispatcher("usuario.jsp").forward(request, response);
 			//response.sendRedirect("usuario.jsp?ok=");
