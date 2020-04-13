@@ -29,6 +29,14 @@
 		<url-pattern>/validacion_android</url-pattern>
 	</servlet-mapping>
 	
+	<servlet>
+		<servlet-name>AndroidGet_ProfileServlet</servlet-name>
+		<servlet-class>com.espotify.controller.AndroidGet_ProfileServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AndroidGet_ProfileServlet</servlet-name>
+		<url-pattern>/perfil_android</url-pattern>
+	</servlet-mapping>
 	
 	
 	<servlet>
@@ -85,15 +93,6 @@
 	<servlet-mapping>
 		<servlet-name>eliminar_cancion</servlet-name>
 		<url-pattern>/eliminar_cancion</url-pattern>
-	</servlet-mapping>
-	
-	<servlet>
-		<servlet-name>android_testing</servlet-name>
-		<servlet-class>com.espotify.controller.AndroidTesting</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>android_testing</servlet-name>
-		<url-pattern>/android_testing</url-pattern>
 	</servlet-mapping>
 	
 	<context-param>

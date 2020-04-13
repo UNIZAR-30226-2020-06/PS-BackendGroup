@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -13,15 +14,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.espotify.dao.ListaReproduccionDAO;
 import com.espotify.dao.UsuarioDAO;
+import com.espotify.model.ListaReproduccion;
+import com.espotify.model.Usuario;
 
 /**
- * Servlet implementation class AndroidTesting
+ * Servlet implementation class AndroidGetAll
  */
-@WebServlet("/AndroidTesting")
-public class AndroidTesting extends HttpServlet {
+@WebServlet("/AndroidGetAll_ListaRepServlet")
+public class AndroidGetAll_ListaRepServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final String PETICION_LOGIN = "login";
 	private static final String PETICION_REGISTRO = "registrar";
@@ -29,7 +34,7 @@ public class AndroidTesting extends HttpServlet {
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public AndroidTesting() {
+    public AndroidGetAll_ListaRepServlet() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -38,7 +43,7 @@ public class AndroidTesting extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		getServletContext().log("PETICION RECIBIDA: CLIENTE ANDROID"); 
+		getServletContext().log("Cliente Android - GetAll-ListaReproduccion"); 
 		
 		// Parsear JSON!
         StringBuilder sb = new StringBuilder();
@@ -47,36 +52,31 @@ public class AndroidTesting extends HttpServlet {
            sb.append(s);
         }
 
-        getServletContext().log("String recibido: " + sb.toString()); //got the full request as string. 
+        getServletContext().log("Cliente Android - GetAll-ListaReproduccion [STRING]: " + sb.toString()); 
         String parseJSON = sb.toString();
        
         JSONObject parametrosPeticion = new JSONObject(parseJSON);
-        getServletContext().log("JSON Object: " + parametrosPeticion);
+        String usuario = parametrosPeticion.getString("usuario");
+        String tipo = parametrosPeticion.getString("tipo");
         
-        String nombre = parametrosPeticion.getString("nombreUsuario");
-        String email = parametrosPeticion.getString("correo");
-        String contrasena = parametrosPeticion.getString("contrasenya");
-        String description = parametrosPeticion.getString("descripcion");
         
         JSONObject respuestaPeticion = new JSONObject();
+        List<ListaReproduccion> listas = new ListaReproduccionDAO().showLists(usuario, tipo);
+        JSONArray listasJson = new JSONArray();
+        
+        for(ListaReproduccion lista : listas) {
+        	listasJson.put(lista.getNombre());
+        }
+        
+        respuestaPeticion.put("lista", listasJson);
         
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
+        
         PrintWriter out = response.getWriter();
-        
-        boolean reg = new UsuarioDAO().register(nombre,email,contrasena,description);
-        if(reg) {
-        	getServletContext().log("Registro OK");
-        	respuestaPeticion.put("respuesta", "ok");
-        	out.print(respuestaPeticion.toString());
-        } else {
-        	getServletContext().log("Registro FAIL");
-        	respuestaPeticion.put("respuesta", "error");
-        	out.print(respuestaPeticion.toString());
-        }
-        
-        // finally output the json string       
-        // out.print(parametrosPeticion.toString());
+        getServletContext().log("Cliente Android - GetAll-ListaReproduccion [RESPONSE]: " + sb.toString()); 
+        out.print(respuestaPeticion);
+
 	}
 
 	/**
@@ -85,17 +85,6 @@ public class AndroidTesting extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		doGet(request, response);
-	}
-	
-	
-	private void redireccionarPeticion(JSONObject peticion, HttpServletRequest request) {
-		String peticionServlet = peticion.getString("peticion");
-		
-		switch(peticionServlet) {
-			case PETICION_REGISTRO:
-				//request.
-				
-		}
 	}
 
 }
