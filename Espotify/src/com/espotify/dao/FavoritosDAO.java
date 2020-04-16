@@ -27,6 +27,8 @@ public class FavoritosDAO {
 													+ "WHERE fav.audio = audio.id AND audio.genero = genero.id AND audio.usuario = user.id AND "
 													+ "fav.usuario = ? ORDER BY audio.titulo";
 	private final static String INSERTAUDIO_QUERY =  "INSERT INTO Reproductor_musica.Favoritos (usuario, audio) VALUES (?,?)";
+	private final static String DELETEAUDIO_QUERY = "DELETE FROM Reproductor_musica.Favoritos WHERE usuario = ? AND audio = ?";
+
 
 	public static List<Audio> getAudios(String usuario) {
 		List<Audio> audios = new ArrayList<Audio>();
@@ -63,6 +65,29 @@ public class FavoritosDAO {
 			
 			ps.setString(1, usuario);
 			ps.setString(2, idAudio);            
+            
+			ps.executeUpdate();
+			
+			ConnectionManager.releaseConnection(conn);
+			return true;
+			
+		} catch(SQLException se) {
+			System.out.println(se.getMessage());
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+	
+	public static boolean quitarAudio(int usuario, int audio) {
+		
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(DELETEAUDIO_QUERY);
+			
+			ps.setInt(1, usuario);
+			ps.setInt(2, audio);            
             
 			ps.executeUpdate();
 			

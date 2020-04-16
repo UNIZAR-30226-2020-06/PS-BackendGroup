@@ -33,7 +33,8 @@ public class ListaReproduccionDAO {
 													+ "WHERE lista.id = cont.lista AND cont.audio = audio.id AND audio.genero = genero.id AND audio.usuario = user.id AND "
 													+ "lista.nombre = ? AND lista.usuario = ? AND lista.tipo = ? ORDER BY audio.titulo";
 	private final static String SHOWLISTS_QUERY = "SELECT * FROM Reproductor_musica.ListasRep WHERE usuario = ? AND tipo = ? ORDER BY nombre";
-	private final static String INSERTAUDIO_QUERY =  "INSERT INTO Reproductor_musica.Contiene (audio, lista) VALUES (?,?)";
+	private final static String INSERTAUDIO_QUERY = "INSERT INTO Reproductor_musica.Contiene (audio, lista) VALUES (?,?)";
+	private final static String DELETE_AUDIO_QUERY = "DELETE FROM Reproductor_musica.Contiene WHERE audio = ? AND lista = ?";
 	
 	private final static String GETNAMES_QUERY = "SELECT nombre FROM Reproductor_musica.ListasRep WHERE usuario = ? AND tipo = ?";
 
@@ -253,6 +254,29 @@ public class ListaReproduccionDAO {
 			ps.setString(1, idAudio);
 			ps.setString(2, idLista);            
             
+			ps.executeUpdate();
+			
+			ConnectionManager.releaseConnection(conn);
+			return true;
+			
+		} catch(SQLException se) {
+			System.out.println(se.getMessage());
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+	
+	public static boolean quitarAudio(int audio, int lista) {
+		
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(DELETE_AUDIO_QUERY);
+			
+			ps.setInt(1, audio);
+            ps.setInt(2, lista);
+
 			ps.executeUpdate();
 			
 			ConnectionManager.releaseConnection(conn);
