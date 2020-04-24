@@ -33,12 +33,11 @@ public class Iniciar_TransmisionServlet extends HttpServlet {
 		String nombre = request.getParameter("nombre");
 		String usuario = request.getParameter("usuario");
 		String descripcion = request.getParameter("descripcion");
-		String url = request.getParameter("url");
 		
-		int idTransmision = new TransmisionDAO().iniciar(nombre, descripcion, Integer.parseInt(usuario), url);
-		if(idTransmision != -1) {
+		Transmision transmision = new TransmisionDAO().iniciar(nombre, descripcion, Integer.parseInt(usuario));
+		if(transmision != null) {
 			HttpSession session = request.getSession();
-			session.setAttribute("idTransmision", idTransmision);
+			session.setAttribute("transmision", transmision);
 			
 			//RequestDispatcher dispatcher=request.getRequestDispatcher("transmision.jsp");
 	        //dispatcher.forward(request, response);

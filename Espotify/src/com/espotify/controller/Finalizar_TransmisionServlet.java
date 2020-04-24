@@ -30,8 +30,9 @@ public class Finalizar_TransmisionServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		String idTransmision = request.getParameter("idTransmision");
+		String url = request.getParameter("url");
 		
-		Boolean finalizada = new TransmisionDAO().finalizar(Integer.parseInt(idTransmision));
+		Boolean finalizada = new TransmisionDAO().finalizar(Integer.parseInt(idTransmision),url);
 		if(finalizada) {
 			
 			//RequestDispatcher dispatcher=request.getRequestDispatcher("user.jsp");
