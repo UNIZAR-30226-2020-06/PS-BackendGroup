@@ -9,14 +9,16 @@ public class Transmision {
 	private int id;
     private String nombre;
 	private String descripcion;
+	private boolean activa;
 	private int usuario;
 	private String url;
 	
-	public Transmision(int id, String nombre, String descripcion, int usuario, String url) {
+	public Transmision(int id, String nombre, String descripcion, boolean activa, int usuario, String url) {
 		super();
         this.id = id;
 		this.url = url;
 		this.nombre = nombre;
+		this.activa = activa;
 		this.descripcion = descripcion;
 		this.usuario = usuario;
 	}
@@ -32,6 +34,10 @@ public class Transmision {
 	public String getNombre() {
         return nombre;
     }
+	
+	public boolean getActiva() {
+		return activa;
+	}
 	
 	public int getUsuario() {
 		return usuario;

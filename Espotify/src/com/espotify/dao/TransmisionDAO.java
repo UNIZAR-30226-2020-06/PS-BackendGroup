@@ -23,21 +23,22 @@ import java.security.NoSuchAlgorithmException;
 public class TransmisionDAO {
 			
 	private final static String INSERT_ESTACION_QUERY = "INSERT INTO Reproductor_musica.Estacion (url, libre) VALUES (?,?)";
-	private final static String INSERT_TRANSM_QUERY = "INSERT INTO Reproductor_musica.TransmisionVivo (nombre, descripcion, usuario, estacion) VALUES (?,?,?,?)";
+	private final static String INSERT_TRANSM_QUERY = "INSERT INTO Reproductor_musica.TransmisionVivo (nombre, descripcion, activa, usuario, estacion) VALUES (?,?,?,?,?)";
 	private final static String GET_ESTACION_QUERY = "SELECT id, url FROM Reproductor_musica.Estacion WHERE libre = true ORDER BY id DESC LIMIT 1";
 	private final static String GET_TRANSM_QUERY = "SELECT id FROM Reproductor_musica.TransmisionVivo ORDER BY id DESC LIMIT 1";
 			
 	private final static String UPDATE_NOM_QUERY = "UPDATE Reproductor_musica.TransmisionVivo SET nombre=? WHERE id = ?";
 	private final static String UPDATE_DES_QUERY = "UPDATE Reproductor_musica.TransmisionVivo SET descripcion=? WHERE id = ?";
 	private final static String UPDATE_ESTACION_QUERY = "UPDATE Reproductor_musica.Estacion SET libre=? WHERE url = ?";
+	private final static String UPDATE_TRANSM_QUERY = "UPDATE Reproductor_musica.TransmisionVivo SET activa=? WHERE id = ?";
 	
 	private final static String DELETE_ESTACION_QUERY =	"DELETE FROM Reproductor_musica.Estacion WHERE url = ?";
 	private final static String DELETE_TRANSM_QUERY =	"DELETE FROM Reproductor_musica.TransmisionVivo WHERE id = ?";
 	
-	private final static String GET_TRANSM_NOMBRE_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.usuario usuario, estacion.url url " 
+	private final static String GET_TRANSM_NOMBRE_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
 															+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
 															+ "WHERE transmision.estacion = estacion.id AND transmision.nombre = ?";
-	private final static String GET_TRANSM_USERS_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.usuario usuario, estacion.url url " 
+	private final static String GET_TRANSM_USERS_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
 															+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
 															+ "WHERE transmision.estacion = estacion.id AND transmision.usuario = ?";
 	private final static String GET_USERS_SEGUIDOS_QUERY = "SELECT usuario2 FROM Reproductor_musica.Sigue WHERE usuario1 = ?";
@@ -100,7 +101,8 @@ public class TransmisionDAO {
 	/*
 	 * Parametros: nombre de la transmision, descripción, id del usuario que la inicia
 	 * Devuelve: null en caso de error, un dato de tipo Transmision con el id de la misma, 
-	 * 			 el nombre, la descipcion, el id del usuario y la URL de la estación asociada.
+	 * 			 el nombre, la descipcion, un boleano para indicar que esta activa, 
+	 * 			 el id del usuario y la URL de la estación asociada.
 	*/
 	public static Transmision iniciar(String nombre, String descripcion, int usuario) {
 		
@@ -129,8 +131,9 @@ public class TransmisionDAO {
 				ps = conn.prepareStatement(INSERT_TRANSM_QUERY);
 				ps.setString(1, nombre);
 				ps.setString(2, descripcion);
-				ps.setInt(3, usuario);
-				ps.setInt(4, idEstacion);
+				ps.setBoolean(3, true);
+				ps.setInt(4, usuario);
+				ps.setInt(5, idEstacion);
 				ps.executeUpdate();
 							
 				ps = conn.prepareStatement(GET_TRANSM_QUERY);
@@ -140,7 +143,7 @@ public class TransmisionDAO {
 						
 			ConnectionManager.releaseConnection(conn);
 			
-			Transmision transmision = new Transmision(idTransmision, nombre, descripcion, usuario, URL);
+			Transmision transmision = new Transmision(idTransmision, nombre, descripcion, true, usuario, URL);
 			return transmision;
 			
 		} catch(SQLException se) {
@@ -154,7 +157,37 @@ public class TransmisionDAO {
 	
 	/*
 	 * Parametros: id de la transmision utilizada, URL de la estacion asociada 
-	 * Devuelve: false en caso de error, true si se ha finalizado la transmision correctamente
+	 * Devuelve: false en caso de error, true si se ha detenido la transmision correctamente (no la borra)
+	*/
+	public static boolean parar(int idTransmision, String url) {
+		
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(UPDATE_TRANSM_QUERY);
+			ps.setBoolean(1, false);
+			ps.setInt(2, idTransmision);
+			ps.executeUpdate();
+			
+			ps = conn.prepareStatement(UPDATE_ESTACION_QUERY);
+			ps.setBoolean(1, true);
+			ps.setString(2, url);
+			ps.executeUpdate();
+			
+			ConnectionManager.releaseConnection(conn);
+			return true;
+			
+		} catch(SQLException se) {
+			System.out.println(se.getMessage());
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+	
+	/*
+	 * Parametros: id de la transmision utilizada, URL de la estacion asociada 
+	 * Devuelve: false en caso de error, true si se ha eliminado la transmision correctamente
 	*/
 	public static boolean finalizar(int idTransmision, String url) {
 		
@@ -223,8 +256,9 @@ public class TransmisionDAO {
 	
 	/*
 	 * Parametros: nombre de una transmision
-	 * Devuelve: una lista de datos de tipo Transmision (id de la misma, nombre,
-	 * 		     descipcion, id del usuario, URL de la estación asociada)
+	 * Devuelve: una lista de datos de tipo Transmision 
+	 * 			 (id de la misma, nombre, descipcion, boleano que indica si esta activa, 
+	 * 			 id del usuario, URL de la estación asociada)
 	*/
 	public static List<Transmision> getTransmisionPorNombre(String nombre) {
 		List<Transmision> directos = new ArrayList<Transmision>();
@@ -238,7 +272,8 @@ public class TransmisionDAO {
 
 			while(rs.next()){
 				Transmision result = new Transmision(rs.getInt("id"), rs.getString("nombre"), 
-									rs.getString("descripcion"), rs.getInt("usuario"), rs.getString("url"));
+									rs.getString("descripcion"), rs.getBoolean("activa"), 
+									rs.getInt("usuario"), rs.getString("url"));
                 directos.add(result);
 			}
 			
@@ -256,8 +291,9 @@ public class TransmisionDAO {
 	/*
 	 * Parametros: id de un usuario
 	 * Comentarios: Obtiene las transmisiones activas de los usuarios a los que sigue "usuario"
-	 * Devuelve: una lista de datos de tipo Transmision (id de la misma, nombre,
-	 * 		     descipcion, id del usuario, URL de la estación asociada)
+	 * Devuelve: una lista de datos de tipo Transmision 
+	 * 			 (id de la misma, nombre, descipcion, boleano que indica si esta activa, 
+	 * 			 id del usuario, URL de la estación asociada)
 	*/
 	public static List<Transmision> getTransmisionesUsersSeguidos(int usuario) {
 		List<Transmision> directos = new ArrayList<Transmision>();
@@ -276,7 +312,8 @@ public class TransmisionDAO {
 				
 				while(rs2.next()){
 					Transmision result = new Transmision(rs2.getInt("id"), rs2.getString("nombre"), 
-										rs2.getString("descripcion"), rs2.getInt("usuario"), rs2.getString("url"));
+										rs2.getString("descripcion"), rs2.getBoolean("activa"), 
+										rs2.getInt("usuario"), rs2.getString("url"));
 	                directos.add(result);
 				}
 			}
@@ -295,8 +332,8 @@ public class TransmisionDAO {
     // Prubas con la base de datos
  	public static void main(String[] args) throws SQLException, IOException{
  		/*
- 		boolean estacion = anyadirEstacion("http://34.69.44.48/trasnmisiones/trasnm2.ogg");
- 		if (estacion) System.out.println("Añadida estacion");
+ 		boolean estacion = anyadirEstacion("http://34.69.44.48/trasnmisiones/trasnm.ogg");
+ 		if (estacion) System.out.println("Añadida estacion"); 		
  		
  		boolean estacion2 = borrarEstacion("http://34.69.44.48/trasnmisiones/trasnm.ogg");
  		if (estacion2) System.out.println("Borrada estacion");
@@ -309,28 +346,33 @@ public class TransmisionDAO {
 		//ps.executeUpdate();
 		//ConnectionManager.releaseConnection(conn);
 		
- 		Transmision transmision = iniciar("Capitulo 0101","descripcion",2);
+ 		Transmision transmision = iniciar("Capitulo 0101","descrip2",2);
  		if (transmision != null) {
  			System.out.println(transmision.getNombre());
  			System.out.println(transmision.getUrl());
  		}
  		
+ 		boolean stop = parar(3,"http://34.69.44.48/trasnmisiones/trasnm.ogg");
+ 		if (stop) System.out.println("Transmision parada");
+ 		
  		boolean fin = finalizar(2,"http://34.69.44.48/trasnmisiones/trasnm.ogg");
  		if (fin) System.out.println("Transmision finalizada");
  		
- 		boolean modificada = cambiar_info("Capitulo nuevo","Nueva descrip",1);
+ 		boolean modificada = cambiar_info("Capitulo 0101","Nueva descrip",1);
  		if (modificada) System.out.println("Modif transmision");
  		
- 		List<Transmision> t = getTransmisionPorNombre("Capitulo nuevo");
+ 		List<Transmision> t = getTransmisionPorNombre("Capitulo 0101");
  		for (Transmision a : t) {
  			System.out.println(a.getNombre());
  	 		System.out.println(a.getUrl());
+ 	 		System.out.println(a.getActiva());
  		}
  		
  		List<Transmision> t2 = getTransmisionesUsersSeguidos(1);
  		for (Transmision a : t2) {
  			System.out.println(a.getNombre());
  	 		System.out.println(a.getUrl());
+ 	 		System.out.println(a.getActiva());
  		}
  		*/
  	}
