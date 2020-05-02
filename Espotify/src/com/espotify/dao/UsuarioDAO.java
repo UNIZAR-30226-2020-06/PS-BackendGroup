@@ -5,6 +5,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.servlet.http.Part;
+
+import com.espotify.model.ConnectionManager;
+import com.espotify.model.Usuario;
+import com.mysql.cj.jdbc.Blob;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import com.espotify.model.ConnectionManager;
 import com.espotify.model.Usuario;
 import com.mysql.cj.jdbc.Blob;
@@ -72,7 +88,7 @@ public class UsuarioDAO {
 	}
 
 	public static boolean cambiar_info(String nombre, String descripcion, String email, String id, String imagen) {
-	
+		
 		try {
 			Connection conn = ConnectionManager.getConnection();
 			PreparedStatement ps;
@@ -100,12 +116,12 @@ public class UsuarioDAO {
 			}
 			if(imagen != null && !imagen.equals("")) {
 				ps = conn.prepareStatement(UPDATE_IMG_QUERY);
-				FileInputStream imagenBinaria = new FileInputStream(imagen);
+				File fichero = new File(imagen);
+				FileInputStream streamEntrada = new FileInputStream(fichero);
 				
-				ps.setBlob(1, imagenBinaria);
+				ps.setBinaryStream(1, streamEntrada, (int) fichero.length());
 				ps.setString(2, id);
 				ps.executeUpdate();
-				imagenBinaria.close();
 			}
 	
 			ConnectionManager.releaseConnection(conn);
@@ -132,10 +148,14 @@ public class UsuarioDAO {
 			ps.setString(2, id);
 			ps.setString(3, pass1_HASH);
 	
-			ps.executeUpdate();
-			
-			ConnectionManager.releaseConnection(conn);
-			return true;
+			if(ps.executeUpdate()==1) { // Se ha podido insertar
+				ConnectionManager.releaseConnection(conn);
+				return true;
+			}
+			else {
+				ConnectionManager.releaseConnection(conn);
+				return false;
+			}
 		} catch(SQLException se) {
 			se.printStackTrace();
 			return false;
@@ -183,7 +203,7 @@ public class UsuarioDAO {
 			ResultSet rs = ps.executeQuery();
 
 			if(rs.first()){
-				result = new Usuario(rs.getString("nombre"),rs.getString("descripcion"), rs.getString("mail"), rs.getString("id"), (Blob) rs.getBlob("imagen"));
+				result = new Usuario(rs.getString("nombre"),rs.getString("descripcion"), rs.getString("mail"), rs.getString("id"), (byte[]) rs.getBytes("imagen"));
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -262,4 +282,3 @@ public class UsuarioDAO {
  		*/
  	}
 }
-

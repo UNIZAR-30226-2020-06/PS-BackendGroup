@@ -10,13 +10,13 @@ public class Usuario {
 	private String descripcion;
 	private String correo;
 	private String id;
-	private Blob imagen;
+	private byte[] imagen;
 	
 	public Usuario(){
 		
 	}
 	
-	public Usuario(String nombre, String descripcion, String correo, String id, Blob imagen) {
+	public Usuario(String nombre, String descripcion, String correo, String id, byte[] imagen) {
 		super();
 		this.nombre = nombre;
 		this.descripcion = descripcion;
@@ -41,7 +41,7 @@ public class Usuario {
 		return id;
 	}
 	
-	public Blob getImagen() {
+	public byte[] getImagen() {
 		return imagen;
 	}
 }
