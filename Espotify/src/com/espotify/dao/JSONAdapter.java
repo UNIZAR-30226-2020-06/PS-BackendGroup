@@ -1,6 +1,7 @@
 package com.espotify.dao;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,4 +28,10 @@ public class JSONAdapter {
 	    
 	    return peticionJSON;
 	}
+	
+	public static String obtenerParametros(HttpServletRequest request) {
+		
+        return "";
+	}
+	
 }

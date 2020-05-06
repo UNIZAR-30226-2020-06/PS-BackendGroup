@@ -30,14 +30,14 @@ public class FavoritosDAO {
 	private final static String DELETEAUDIO_QUERY = "DELETE FROM Reproductor_musica.Favoritos WHERE usuario = ? AND audio = ?";
 
 
-	public static List<Audio> getAudios(String usuario) {
+	public List<Audio> getAudios(int usuario) {
 		List<Audio> audios = new ArrayList<Audio>();
 		try {
 
 			Connection conn = ConnectionManager.getConnection();
 			PreparedStatement ps = conn.prepareStatement(GETAUDIOS_QUERY);
             
-            ps.setString(1, usuario);
+            ps.setInt(1, usuario);
 			ResultSet rs = ps.executeQuery();
 
 			while(rs.next()){
@@ -57,14 +57,14 @@ public class FavoritosDAO {
 		return audios;
 	}
 	
-	public static boolean anyadirAudio(String usuario, String idAudio) {
+	public  boolean anyadirAudio(int usuario, int idAudio) {
 		
 		try {
 			Connection conn = ConnectionManager.getConnection();
 			PreparedStatement ps = conn.prepareStatement(INSERTAUDIO_QUERY);
 			
-			ps.setString(1, usuario);
-			ps.setString(2, idAudio);            
+			ps.setInt(1, usuario);
+			ps.setInt(2, idAudio);            
             
 			ps.executeUpdate();
 			
@@ -80,7 +80,7 @@ public class FavoritosDAO {
 		}
 	}
 	
-	public static boolean quitarAudio(int usuario, int audio) {
+	public  boolean quitarAudio(int usuario, int audio) {
 		
 		try {
 			Connection conn = ConnectionManager.getConnection();
@@ -104,10 +104,10 @@ public class FavoritosDAO {
 	}
     
     // Prubas con la base de datos
- 	public static void main(String[] args) throws SQLException, IOException{
+ 	//public static void main(String[] args) throws SQLException, IOException{
  		
  		//boolean anyadido = anyadirAudio("2","6");
- 		//if (anyadido) System.out.println("AÃ±adido audio a favoritos");
+ 		//if (anyadido) System.out.println("Añadido audio a favoritos");
  		
  		/*List<Audio> la = getAudios("2");
  		for (Audio a : la) {
@@ -116,6 +116,5 @@ public class FavoritosDAO {
  	 		System.out.println(a.getUsuario());
  		}*/
  		
- 	}
+ 	//}
 }
-

@@ -24,7 +24,7 @@ public class TransmisionDAO {
 			
 	private final static String INSERT_ESTACION_QUERY = "INSERT INTO Reproductor_musica.Estacion (url, libre) VALUES (?,?)";
 	private final static String INSERT_TRANSM_QUERY = "INSERT INTO Reproductor_musica.TransmisionVivo (nombre, descripcion, activa, usuario, estacion) VALUES (?,?,?,?,?)";
-	private final static String GET_ESTACION_QUERY = "SELECT id, url FROM Reproductor_musica.Estacion WHERE libre = true ORDER BY id DESC LIMIT 1";
+	private final static String GET_ESTACION_QUERY = "SELECT id, url FROM Reproductor_musica.Estacion WHERE libre = 0 ORDER BY id DESC LIMIT 1";
 	private final static String GET_TRANSM_QUERY = "SELECT id FROM Reproductor_musica.TransmisionVivo ORDER BY id DESC LIMIT 1";
 			
 	private final static String UPDATE_NOM_QUERY = "UPDATE Reproductor_musica.TransmisionVivo SET nombre=? WHERE id = ?";
@@ -38,6 +38,10 @@ public class TransmisionDAO {
 	private final static String GET_TRANSM_NOMBRE_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
 															+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
 															+ "WHERE transmision.estacion = estacion.id AND transmision.nombre = ?";
+	private final static String GET_TRANSM_ID_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
+			+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
+			+ "WHERE transmision.estacion = estacion.id AND transmision.id = ?";
+	
 	private final static String GET_TRANSM_USERS_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
 															+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
 															+ "WHERE transmision.estacion = estacion.id AND transmision.usuario = ?";
@@ -105,7 +109,7 @@ public class TransmisionDAO {
 	 * 			 el id del usuario y la URL de la estación asociada.
 	*/
 	public static Transmision iniciar(String nombre, String descripcion, int usuario) {
-		
+		System.out.println("ENTROOOOOO");
 		try {
 			Connection conn = ConnectionManager.getConnection();
 						
@@ -123,15 +127,16 @@ public class TransmisionDAO {
 				return null;
 			}
 			else {
+				System.out.println("PASADO GET");
 				ps = conn.prepareStatement(UPDATE_ESTACION_QUERY);
-				ps.setBoolean(1, false);
+				ps.setInt(1, 0);
 				ps.setString(2, URL);
 				ps.executeUpdate();
-				
+				System.out.println("PASADO UPDATE");
 				ps = conn.prepareStatement(INSERT_TRANSM_QUERY);
 				ps.setString(1, nombre);
 				ps.setString(2, descripcion);
-				ps.setBoolean(3, true);
+				ps.setInt(3, 1);
 				ps.setInt(4, usuario);
 				ps.setInt(5, idEstacion);
 				ps.executeUpdate();
@@ -142,14 +147,16 @@ public class TransmisionDAO {
 			}
 						
 			ConnectionManager.releaseConnection(conn);
-			
+			System.out.println("NO PROBLEMA SQL");
 			Transmision transmision = new Transmision(idTransmision, nombre, descripcion, true, usuario, URL);
 			return transmision;
 			
 		} catch(SQLException se) {
+			System.out.println("PROBLEMA SQL");
 			System.out.println(se.getMessage());
 			return null;
 		} catch(Exception e) {
+			System.out.println("EXCEPTION");
 			e.printStackTrace(System.err);
 			return null;
 		}
@@ -164,12 +171,12 @@ public class TransmisionDAO {
 		try {
 			Connection conn = ConnectionManager.getConnection();
 			PreparedStatement ps = conn.prepareStatement(UPDATE_TRANSM_QUERY);
-			ps.setBoolean(1, false);
+			ps.setInt(1, 0);
 			ps.setInt(2, idTransmision);
 			ps.executeUpdate();
 			
 			ps = conn.prepareStatement(UPDATE_ESTACION_QUERY);
-			ps.setBoolean(1, true);
+			ps.setInt(1, 1);
 			ps.setString(2, url);
 			ps.executeUpdate();
 			
@@ -198,7 +205,7 @@ public class TransmisionDAO {
 			ps.executeUpdate();
 			
 			ps = conn.prepareStatement(UPDATE_ESTACION_QUERY);
-			ps.setBoolean(1, true);
+			ps.setInt(1, 1);
 			ps.setString(2, url);
 			ps.executeUpdate();
 			
@@ -288,6 +295,34 @@ public class TransmisionDAO {
 		return directos;
 	}
 	
+	
+	public static Transmision getTransmisionPorId(int id) {
+		Transmision result = null;
+		try {
+
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(GET_TRANSM_ID_QUERY);
+            
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+
+			while(rs.next()){
+				result = new Transmision(rs.getInt("id"), rs.getString("nombre"), 
+									rs.getString("descripcion"), rs.getBoolean("activa"), 
+									rs.getInt("usuario"), rs.getString("url"));
+			}
+			
+			ConnectionManager.releaseConnection(conn);
+			
+		} catch(SQLException se) {
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return result;
+	}
+	
 	/*
 	 * Parametros: id de un usuario
 	 * Comentarios: Obtiene las transmisiones activas de los usuarios a los que sigue "usuario"
@@ -328,53 +363,5 @@ public class TransmisionDAO {
 		
 		return directos;
 	}
-    
-    // Prubas con la base de datos
- 	public static void main(String[] args) throws SQLException, IOException{
- 		/*
- 		boolean estacion = anyadirEstacion("http://34.69.44.48/trasnmisiones/trasnm.ogg");
- 		if (estacion) System.out.println("Añadida estacion"); 		
- 		
- 		boolean estacion2 = borrarEstacion("http://34.69.44.48/trasnmisiones/trasnm.ogg");
- 		if (estacion2) System.out.println("Borrada estacion");
- 		
- 		//String seguir = "INSERT INTO Reproductor_musica.Sigue (usuario1, usuario2) VALUES (?,?)";
- 		//Connection conn = ConnectionManager.getConnection();
-		//PreparedStatement ps = conn.prepareStatement(seguir);
-		//ps.setInt(1, 1);
-		//ps.setInt(2, 9);
-		//ps.executeUpdate();
-		//ConnectionManager.releaseConnection(conn);
-		
- 		Transmision transmision = iniciar("Capitulo 0101","descrip2",2);
- 		if (transmision != null) {
- 			System.out.println(transmision.getNombre());
- 			System.out.println(transmision.getUrl());
- 		}
- 		
- 		boolean stop = parar(3,"http://34.69.44.48/trasnmisiones/trasnm.ogg");
- 		if (stop) System.out.println("Transmision parada");
- 		
- 		boolean fin = finalizar(2,"http://34.69.44.48/trasnmisiones/trasnm.ogg");
- 		if (fin) System.out.println("Transmision finalizada");
- 		
- 		boolean modificada = cambiar_info("Capitulo 0101","Nueva descrip",1);
- 		if (modificada) System.out.println("Modif transmision");
- 		
- 		List<Transmision> t = getTransmisionPorNombre("Capitulo 0101");
- 		for (Transmision a : t) {
- 			System.out.println(a.getNombre());
- 	 		System.out.println(a.getUrl());
- 	 		System.out.println(a.getActiva());
- 		}
- 		
- 		List<Transmision> t2 = getTransmisionesUsersSeguidos(1);
- 		for (Transmision a : t2) {
- 			System.out.println(a.getNombre());
- 	 		System.out.println(a.getUrl());
- 	 		System.out.println(a.getActiva());
- 		}
- 		*/
- 	}
 }
 

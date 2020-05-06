@@ -24,6 +24,7 @@ public class CapituloPodcastDAO {
 	private final static String GET_ID_ULTIMO_CAPITULO_QUERY = "SELECT a.id FROM Reproductor_musica.Audio a ORDER BY a.id DESC LIMIT 1";
 	private final static String UPDATE_QUERY = "UPDATE Reproductor_musica.Audio SET titulo = ?, genero = ? WHERE id = ?";
 	private final static String GET_NOMBRE_AUTOR_QUERY = "SELECT a.nombre FROM Reproductor_musica.Usuario a WHERE a.id = ?";
+	private final static String GET_CAPITULOS_PODCAST = "SELECT * FROM Reproductor_musica.Audio a WHERE a.id IN (SELECT audio FROM Reproductor_musica.Contiene c WHERE c.lista = (SELECT id FROM Reproductor_musica.ListasRep lr WHERE nombre = ?))";
 	private final static String GET_NOMBRE_GENERO_QUERY = "SELECT g.nombre FROM Reproductor_musica.Genero g WHERE g.id = ? AND g.tipo = 'capituloPodcast'";
 	private final static String GET_CAPITULO_USUARIO = "SELECT a.id, a.titulo, a.url, a.usuario, a.genero FROM Reproductor_musica.Audio a WHERE a.usuario = ? AND a.genero IN (SELECT g.id FROM Reproductor_musica.Genero g WHERE g.tipo = 'capituloPodcast')";
 	private final static String GET_TODOS_QUERY = "SELECT * FROM Reproductor_musica.Audio";
@@ -50,7 +51,6 @@ public class CapituloPodcastDAO {
 			List<Audio> listaAudios = new ArrayList<>();
 			
 			while(rs.next()) { 
-				System.out.println("params: " + rs.getString(1) + rs.getString(2) + rs.getString(3) + rs.getString(4) + rs.getString(5));
 				a = new Audio(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5));
 				listaAudios.add(a);
 			}
@@ -63,6 +63,34 @@ public class CapituloPodcastDAO {
 			return null;
 		}
 	}
+	
+	
+	public List<Audio> obtenerCapitulosPodcast(String nombrePodcast) {
+		List<Audio> listaAudios = new ArrayList<>();
+		Connection conn;
+		try {
+			conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(GET_CAPITULOS_PODCAST);				
+			ps.setString(1, nombrePodcast);
+			
+			ResultSet rs = ps.executeQuery();
+			Audio a;
+			
+			while(rs.next()) { 
+				a = new Audio(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5));
+				listaAudios.add(a);
+			}
+			ConnectionManager.releaseConnection(conn);
+			
+			return listaAudios;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error al obtener el id del capitulo");
+			return null;
+		}
+	}
+	
+	
 	
 	public boolean insertar_url(String url) {
 		Connection conn;
@@ -106,16 +134,15 @@ public class CapituloPodcastDAO {
 	
 	public boolean modificarCapituloPodcast(String titulo, int genero, int id){
 		Connection conn;
-		int id_genero = obtenerIDGenero(genero);
 		try {
 			conn = ConnectionManager.getConnection();
 			PreparedStatement ps = conn.prepareStatement(UPDATE_QUERY);
 			ps.setString(1, titulo);
-			ps.setInt(2, id_genero);
+			ps.setInt(2, genero);
 			ps.setInt(3, id);
 			System.out.println(titulo);
 			System.out.println(id);
-			System.out.println(id_genero);
+			System.out.println(genero);
 			ps.executeUpdate();
 			
 			ConnectionManager.releaseConnection(conn);
@@ -126,7 +153,7 @@ public class CapituloPodcastDAO {
 			return false;
 		}	
 	}
-	
+
 	
 	public String obtenerNombreAutor(int id_autor) {
 		System.out.println("obtenerIDCapitulo Entro +++++++++++++++++");

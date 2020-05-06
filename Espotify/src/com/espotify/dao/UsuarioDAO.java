@@ -1,5 +1,6 @@
 package com.espotify.dao;
 
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,7 +10,6 @@ import javax.servlet.http.Part;
 
 import com.espotify.model.ConnectionManager;
 import com.espotify.model.Usuario;
-import com.mysql.cj.jdbc.Blob;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,18 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
-import com.espotify.model.ConnectionManager;
-import com.espotify.model.Usuario;
-import com.mysql.cj.jdbc.Blob;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public class UsuarioDAO {
 	private final static String INSERT_QUERY = "INSERT INTO Reproductor_musica.Usuario (mail, descripcion, nombre, password, imagen) VALUES (?,?,?,?,null)";
@@ -36,11 +25,13 @@ public class UsuarioDAO {
 	private final static String UPDATE_NOM_QUERY = "UPDATE Reproductor_musica.Usuario SET nombre=? WHERE id = ?";
 	private final static String UPDATE_DES_QUERY = "UPDATE Reproductor_musica.Usuario SET descripcion=? WHERE id = ?";
 	private final static String UPDATE_MAIL_QUERY = "UPDATE Reproductor_musica.Usuario SET mail=? WHERE id = ?";
-	private final static String UPDATE_IMG_QUERY = "UPDATE Reproductor_musica.Usuario SET imagen=? WHERE id = ?";
+	private final static String UPDATE_IMG_QUERY = "UPDATE Reproductor_musica.Usuario SET imagen = ? WHERE id = ?";
 	private final static String UPDATE_PASS_QUERY = "UPDATE Reproductor_musica.Usuario SET password=? WHERE id = ? AND password=?";
+	private final static String UPDATE_PASS_QUERY_NOVERIFY = "UPDATE Reproductor_musica.Usuario SET password=? WHERE id = ?";
 	private final static String LOGIN_QUERY = "SELECT nombre, descripcion, mail, id, imagen FROM Reproductor_musica.Usuario WHERE mail = ? AND password = ?";
 	private final static String USER_GETID_QUERY = "SELECT id, imagen FROM Reproductor_musica.Usuario WHERE mail = ?";
-	private final static String USER_GETINFO_QUERY = "SELECT nombre, descripcion, mail FROM Reproductor_musica.Usuario WHERE mail = ?";
+	private final static String USER_GETINFO_QUERY = "SELECT nombre, descripcion, mail, imagen FROM Reproductor_musica.Usuario WHERE mail = ?";
+	private final static String USER_GETIMAGE_BLOB_QUERY = "SELECT imagen FROM Reproductor_musica.Usuario WHERE mail = ?";
 	
 	
 	/**
@@ -135,6 +126,31 @@ public class UsuarioDAO {
 		return false;
 	}
 	
+	public static boolean actualizarImagen(String id, byte[] imagen) {
+		
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps;
+			
+			if(imagen != null && !imagen.equals("")) {
+				ps = conn.prepareStatement(UPDATE_IMG_QUERY);
+				
+				ps.setBytes(1, imagen);
+				ps.setString(2, id);
+				ps.executeUpdate();
+			}
+	
+			ConnectionManager.releaseConnection(conn);
+			return true;
+		} catch(SQLException se) {
+			se.printStackTrace();
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		return false;
+	}
+	
 	
 	public static boolean cambiar_pass(String pass1, String pass2, String id) {
 		
@@ -148,6 +164,33 @@ public class UsuarioDAO {
 			ps.setString(2, id);
 			ps.setString(3, pass1_HASH);
 	
+			if(ps.executeUpdate()==1) { // Se ha podido insertar
+				ConnectionManager.releaseConnection(conn);
+				return true;
+			}
+			else {
+				ConnectionManager.releaseConnection(conn);
+				return false;
+			}
+		} catch(SQLException se) {
+			se.printStackTrace();
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		return false;
+	}
+	
+	public static boolean cambiar_pass_noverify(String nuevaContrasenya, String id) {
+		
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(UPDATE_PASS_QUERY_NOVERIFY);
+
+			String pass1_HASH = convertirSHA256(nuevaContrasenya); // password actual
+			ps.setString(1, pass1_HASH);
+			ps.setString(2, id);
+
 			if(ps.executeUpdate()==1) { // Se ha podido insertar
 				ConnectionManager.releaseConnection(conn);
 				return true;
@@ -228,7 +271,7 @@ public class UsuarioDAO {
 			ResultSet rs = ps.executeQuery();
 
 			if(rs.first()){
-				result = new Usuario(rs.getString("nombre"), rs.getString("descripcion"), rs.getString("mail"), null, null);
+				result = new Usuario(rs.getString("nombre"), rs.getString("descripcion"), rs.getString("mail"), null, rs.getBytes("imagen"));
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -267,6 +310,30 @@ public class UsuarioDAO {
 		return id;
 	}
 	
+	public static Blob obtenerBlobImagen(String email) {
+		Blob blob = null;
+		try {
+
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(USER_GETIMAGE_BLOB_QUERY);
+			ps.setString(1, email);
+			
+			ResultSet rs = ps.executeQuery();
+
+			if(rs.first()){
+				blob = rs.getBlob("imagen");
+			}
+			
+			ConnectionManager.releaseConnection(conn);
+		} catch(SQLException se) {
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return blob;
+	}
+	
 	// Prubas con la base de datos
  	public static void main(String[] args) throws SQLException, IOException{
  		/*
@@ -282,3 +349,4 @@ public class UsuarioDAO {
  		*/
  	}
 }
+
