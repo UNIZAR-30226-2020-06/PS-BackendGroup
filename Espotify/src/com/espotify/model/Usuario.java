@@ -1,7 +1,5 @@
 package com.espotify.model;
 
-import com.mysql.cj.jdbc.Blob;
-
 /**
  * Clase que define la estructura de un usuario.
  */
@@ -10,13 +8,13 @@ public class Usuario {
 	private String descripcion;
 	private String correo;
 	private String id;
-	private byte[] imagen;
+	private String imagen;
 	
 	public Usuario(){
 		
 	}
 	
-	public Usuario(String nombre, String descripcion, String correo, String id, byte[] imagen) {
+	public Usuario(String nombre, String descripcion, String correo, String id, String imagen) {
 		super();
 		this.nombre = nombre;
 		this.descripcion = descripcion;
@@ -41,7 +39,7 @@ public class Usuario {
 		return id;
 	}
 	
-	public byte[] getImagen() {
+	public String getImagen() {
 		return imagen;
 	}
 }

@@ -97,7 +97,7 @@ public class SeguirDAO {
 
 			while(rs.next()){
 				Usuario result = new Usuario(rs.getString("nombre"),rs.getString("descripcion"),
-									rs.getString("mail"),rs.getString("id"),(byte[]) rs.getBytes("imagen"));
+									rs.getString("mail"),rs.getString("id"),rs.getString("imagen"));
                 usuarios.add(result);
 			}
 			
@@ -127,7 +127,7 @@ public class SeguirDAO {
 
 			while(rs.next()){
 				Usuario result = new Usuario(rs.getString("nombre"),rs.getString("descripcion"),
-									rs.getString("mail"),rs.getString("id"),(byte[]) rs.getBytes("imagen"));
+									rs.getString("mail"),rs.getString("id"),rs.getString("imagen"));
                 usuarios.add(result);
 			}
 			

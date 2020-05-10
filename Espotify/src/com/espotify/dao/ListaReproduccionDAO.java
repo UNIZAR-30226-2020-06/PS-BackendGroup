@@ -235,9 +235,8 @@ public class ListaReproduccionDAO {
 			}
 			if(imagen != null && !imagen.equals("")) {
 				ps = conn.prepareStatement(UPDATE_IMG_QUERY);
-				FileInputStream imagenBinaria = new FileInputStream(imagen);
 				
-				ps.setBlob(1, imagenBinaria);
+				ps.setString(1, imagen);
 				if (cambioNombre) {
 					ps.setString(2, nombreNew);
 				}
@@ -247,9 +246,7 @@ public class ListaReproduccionDAO {
                 ps.setInt(3, usuario);
                 ps.setString(4, tipo);
 				ps.executeUpdate();
-				
-				imagenBinaria.close();
-				
+								
 				cambiada = true;
 			}
 			ConnectionManager.releaseConnection(conn);
@@ -301,9 +298,8 @@ public class ListaReproduccionDAO {
 			}
 			if(imagen != null && !imagen.equals("")) {
 				ps = conn.prepareStatement(UPDATE_IMG_QUERY);
-				FileInputStream imagenBinaria = new FileInputStream(imagen);
 				
-				ps.setBlob(1, imagenBinaria);
+				ps.setString(1, imagen);
 				if (cambioNombre) {
 					ps.setString(2, nombreNew);
 				}
@@ -313,9 +309,7 @@ public class ListaReproduccionDAO {
                 ps.setString(3, usuario);
                 ps.setString(4, tipo);
 				ps.executeUpdate();
-				
-				imagenBinaria.close();
-				
+								
 				cambiada = true;
 			}
 			ConnectionManager.releaseConnection(conn);
@@ -344,7 +338,7 @@ public class ListaReproduccionDAO {
 
 			while(rs.next()){
 				ListaReproduccion result = new ListaReproduccion(rs.getString("id"), rs.getString("nombre"), 
-						rs.getString("usuario"), rs.getString("descripcion"), (Blob) rs.getBlob("imagen"), rs.getString("tipo"));
+						rs.getString("usuario"), rs.getString("descripcion"), rs.getString("imagen"), rs.getString("tipo"));
                 rutas.add(result);
 			}
 			
@@ -375,7 +369,7 @@ public class ListaReproduccionDAO {
 
 			while(rs.next()){
 				ListaReproduccion result = new ListaReproduccion(rs.getString("id"), rs.getString("nombre"), 
-						rs.getString("usuario"), rs.getString("descripcion"), (Blob) rs.getBlob("imagen"), rs.getString("tipo"));
+						rs.getString("usuario"), rs.getString("descripcion"), rs.getString("imagen"), rs.getString("tipo"));
                 rutas.add(result);
 			}
 			
@@ -405,7 +399,7 @@ public class ListaReproduccionDAO {
 
 			while(rs.next()){
 				ListaReproduccion result = new ListaReproduccion(rs.getString("id"), rs.getString("nombre"), 
-						rs.getString("usuario"), rs.getString("descripcion"), (Blob) rs.getBlob("imagen"), rs.getString("tipo"));
+						rs.getString("usuario"), rs.getString("descripcion"), rs.getString("imagen"), rs.getString("tipo"));
                 rutas.add(result);
 			}
 			
@@ -440,7 +434,7 @@ public class ListaReproduccionDAO {
 
 			if(rs.first()){
 				result = new ListaReproduccion(rs.getString("id"), rs.getString("nombre"), 
-						rs.getString("usuario"), rs.getString("descripcion"), (Blob) rs.getBlob("imagen"), rs.getString("tipo"));
+						rs.getString("usuario"), rs.getString("descripcion"), rs.getString("imagen"), rs.getString("tipo"));
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -469,7 +463,7 @@ public class ListaReproduccionDAO {
 
 			if(rs.first()){
 				result = new ListaReproduccion(rs.getString("id"), rs.getString("nombre"), 
-						rs.getString("usuario"), rs.getString("descripcion"), (Blob) rs.getBlob("imagen"), rs.getString("tipo"));
+						rs.getString("usuario"), rs.getString("descripcion"), rs.getString("imagen"), rs.getString("tipo"));
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -588,7 +582,7 @@ public class ListaReproduccionDAO {
 
 			while(rs.next()){
 				ListaReproduccion result = new ListaReproduccion(rs.getString("id"), rs.getString("nombre"), 
-						rs.getString("usuario"), rs.getString("descripcion"), (Blob) rs.getBlob("imagen"), rs.getString("tipo"));
+						rs.getString("usuario"), rs.getString("descripcion"), rs.getString("imagen"), rs.getString("tipo"));
                 rutas.add(result);
 			}
 			

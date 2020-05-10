@@ -58,12 +58,10 @@ public class UsuarioDAO {
 			ps.executeUpdate();
 			
 			if(imagen != null && !imagen.equals("")) {
-				FileInputStream imagenBinaria = new FileInputStream(imagen);
 				ps = conn.prepareStatement(INSERT_IMG_QUERY);
-				ps.setBlob(1, imagenBinaria);
+				ps.setString(1, imagen);
 				ps.setString(2, email);
 				ps.executeUpdate();
-				imagenBinaria.close();
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -107,10 +105,8 @@ public class UsuarioDAO {
 			}
 			if(imagen != null && !imagen.equals("")) {
 				ps = conn.prepareStatement(UPDATE_IMG_QUERY);
-				File fichero = new File(imagen);
-				FileInputStream streamEntrada = new FileInputStream(fichero);
 				
-				ps.setBinaryStream(1, streamEntrada, (int) fichero.length());
+				ps.setString(1, imagen);
 				ps.setString(2, id);
 				ps.executeUpdate();
 			}
@@ -126,7 +122,7 @@ public class UsuarioDAO {
 		return false;
 	}
 	
-	public static boolean actualizarImagen(String id, byte[] imagen) {
+	public static boolean actualizarImagen(String id, String imagen) {
 		
 		try {
 			Connection conn = ConnectionManager.getConnection();
@@ -135,7 +131,7 @@ public class UsuarioDAO {
 			if(imagen != null && !imagen.equals("")) {
 				ps = conn.prepareStatement(UPDATE_IMG_QUERY);
 				
-				ps.setBytes(1, imagen);
+				ps.setString(1, imagen);
 				ps.setString(2, id);
 				ps.executeUpdate();
 			}
@@ -246,7 +242,7 @@ public class UsuarioDAO {
 			ResultSet rs = ps.executeQuery();
 
 			if(rs.first()){
-				result = new Usuario(rs.getString("nombre"),rs.getString("descripcion"), rs.getString("mail"), rs.getString("id"), (byte[]) rs.getBytes("imagen"));
+				result = new Usuario(rs.getString("nombre"),rs.getString("descripcion"), rs.getString("mail"), rs.getString("id"), rs.getString("imagen"));
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -271,7 +267,7 @@ public class UsuarioDAO {
 			ResultSet rs = ps.executeQuery();
 
 			if(rs.first()){
-				result = new Usuario(rs.getString("nombre"), rs.getString("descripcion"), rs.getString("mail"), null, rs.getBytes("imagen"));
+				result = new Usuario(rs.getString("nombre"), rs.getString("descripcion"), rs.getString("mail"), null, rs.getString("imagen"));
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -310,8 +306,8 @@ public class UsuarioDAO {
 		return id;
 	}
 	
-	public static Blob obtenerBlobImagen(String email) {
-		Blob blob = null;
+	public static String obtenerURLImagen(String email) {
+		String imagen = null;
 		try {
 
 			Connection conn = ConnectionManager.getConnection();
@@ -321,7 +317,7 @@ public class UsuarioDAO {
 			ResultSet rs = ps.executeQuery();
 
 			if(rs.first()){
-				blob = rs.getBlob("imagen");
+				imagen = rs.getString("imagen");
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -331,7 +327,7 @@ public class UsuarioDAO {
 			e.printStackTrace(System.err);
 		}
 		
-		return blob;
+		return imagen;
 	}
 	
 	// Prubas con la base de datos

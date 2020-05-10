@@ -1,7 +1,5 @@
 package com.espotify.model;
 
-import com.mysql.cj.jdbc.Blob;
-
 /**
  * Clase que define la estructura de una lista de reproducción.
  */
@@ -12,10 +10,10 @@ public class ListaReproduccion {
 	private String usuario;
 	private String nombre;
 	private String descripcion;
-	private Blob imagen;
+	private String imagen;
 	private String tipo;
 	
-	public ListaReproduccion(String id, String nombre, String usuario, String descripcion, Blob imagen, String tipo) {
+	public ListaReproduccion(String id, String nombre, String usuario, String descripcion, String imagen, String tipo) {
 		super();
         this.id = id;
 		this.nombre = nombre;
@@ -37,7 +35,7 @@ public class ListaReproduccion {
 		return descripcion;
 	}
 
-	public Blob getImagen() {
+	public String getImagen() {
 		return imagen;
 	}
 	

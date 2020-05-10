@@ -107,7 +107,7 @@ public class BusquedasDAO {
 
 			while(rs.next()){
 				ListaReproduccion result = new ListaReproduccion(rs.getString("id"), rs.getString("nombre"), 
-						rs.getString("nomUser"), rs.getString("descripcion"), (Blob) rs.getBlob("imagen"), rs.getString("tipo"));
+						rs.getString("nomUser"), rs.getString("descripcion"), rs.getString("imagen"), rs.getString("tipo"));
                 listas.add(result);
 			}
 			
@@ -132,7 +132,7 @@ public class BusquedasDAO {
 
 			while(rs.next()){
 				ListaReproduccion result = new ListaReproduccion(rs.getString("id"), rs.getString("nombre"), 
-						rs.getString("nomUser"), rs.getString("descripcion"), (Blob) rs.getBlob("imagen"), rs.getString("tipo"));
+						rs.getString("nomUser"), rs.getString("descripcion"), rs.getString("imagen"), rs.getString("tipo"));
                 podcasts.add(result);
 			}
 						
@@ -182,7 +182,7 @@ public class BusquedasDAO {
 
 			while(rs.next()){
 				Usuario result = new Usuario(rs.getString("nombre"), rs.getString("descripcion"), 
-										rs.getString("mail"), rs.getString("id"), (byte[]) rs.getBytes("imagen"));
+										rs.getString("mail"), rs.getString("id"), rs.getString("imagen"));
 				usuarios.add(result);
 			}
 						
