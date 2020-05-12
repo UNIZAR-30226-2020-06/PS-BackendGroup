@@ -29,10 +29,15 @@ public class ListaReproduccionDAO {
 	private final static String UPDATE_IMG_QUERY = "UPDATE Reproductor_musica.ListasRep SET imagen=? WHERE nombre = ? AND usuario = ? AND tipo = ?";
 	private final static String DELETE_QUERY =	"DELETE FROM Reproductor_musica.ListasRep WHERE nombre = ? AND usuario = ? AND tipo = ?";
 	private final static String GETINFOLIST_QUERY = "SELECT * FROM Reproductor_musica.ListasRep WHERE nombre = ? AND usuario = ? AND tipo = ?";
+	private final static String GETINFOLISTID_QUERY = "SELECT * FROM Reproductor_musica.ListasRep WHERE id = ?";
 	private final static String GETAUDIOS_QUERY = "SELECT audio.id id, audio.url url, audio.titulo titulo, user.nombre autor, genero.nombre genero FROM Reproductor_musica.ListasRep lista,"  
 													+ "Reproductor_musica.Contiene cont, Reproductor_musica.Audio audio, Reproductor_musica.Genero genero, Reproductor_musica.Usuario user " 
 													+ "WHERE lista.id = cont.lista AND cont.audio = audio.id AND audio.genero = genero.id AND audio.usuario = user.id AND "
 													+ "lista.nombre = ? AND lista.usuario = ? AND lista.tipo = ? ORDER BY audio.titulo";
+	private final static String GETAUDIOSID_QUERY = "SELECT audio.id id, audio.url url, audio.titulo titulo, user.nombre autor, genero.nombre genero FROM Reproductor_musica.ListasRep lista,"  
+													+ "Reproductor_musica.Contiene cont, Reproductor_musica.Audio audio, Reproductor_musica.Genero genero, Reproductor_musica.Usuario user " 
+													+ "WHERE lista.id = cont.lista AND cont.audio = audio.id AND audio.genero = genero.id AND audio.usuario = user.id AND "
+													+ "lista.id = ? ORDER BY audio.titulo";
 	private final static String SHOWLISTS_QUERY = "SELECT * FROM Reproductor_musica.ListasRep WHERE usuario = ? AND tipo = ? ORDER BY nombre";
 	private final static String SHOW_ALL_LISTS_QUERY = "SELECT * FROM Reproductor_musica.ListasRep WHERE tipo = ? ORDER BY nombre";
 	private final static String INSERTAUDIO_QUERY =  "INSERT INTO Reproductor_musica.Contiene (audio, lista) VALUES (?,?)";
@@ -417,7 +422,31 @@ public class ListaReproduccionDAO {
 		return rutas;
 	}
 	
-	
+	public ListaReproduccion getInfoListId(int idLista) {
+		ListaReproduccion result = null;
+		try {
+
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(GETINFOLISTID_QUERY);
+            
+            ps.setInt(1, idLista);			
+			ResultSet rs = ps.executeQuery();
+
+			if(rs.first()){
+				result = new ListaReproduccion(rs.getString("id"), rs.getString("nombre"), 
+						rs.getString("usuario"), rs.getString("descripcion"), rs.getString("imagen"), rs.getString("tipo"));
+			}
+			
+			ConnectionManager.releaseConnection(conn);
+			
+		} catch(SQLException se) {
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return result;
+	}
 	
 	public ListaReproduccion getInfoList(String nombre, int usuario, String tipo) {
 		ListaReproduccion result = null;
@@ -475,6 +504,33 @@ public class ListaReproduccionDAO {
 		}
 		
 		return result;
+	}
+	
+	public static List<Audio> getAudiosId(int idList) {
+		List<Audio> audios = new ArrayList<Audio>();
+		try {
+
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(GETAUDIOSID_QUERY);
+            
+            ps.setInt(1, idList);
+			ResultSet rs = ps.executeQuery();
+
+			while(rs.next()){
+				Audio result = new Audio(rs.getString("id"), rs.getString("url"), 
+						rs.getString("titulo"), rs.getString("autor"), rs.getString("genero"));
+                audios.add(result);
+			}
+			
+			ConnectionManager.releaseConnection(conn);
+			
+		} catch(SQLException se) {
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return audios;
 	}
 	
 	public static List<Audio> getAudios(String nombre, int usuario, String tipo) {
@@ -738,4 +794,3 @@ public class ListaReproduccionDAO {
     	
     }
 }
-
