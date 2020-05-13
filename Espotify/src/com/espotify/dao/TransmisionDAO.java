@@ -44,9 +44,10 @@ public class TransmisionDAO {
 	
 	private final static String GET_TRANSM_USERS_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
 															+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
-															+ "WHERE transmision.estacion = estacion.id AND transmision.usuario = ?";
+															+ "WHERE transmision.estacion = estacion.id AND transmision.activa = 1 AND transmision.usuario = ?";
 	private final static String GET_USERS_SEGUIDOS_QUERY = "SELECT usuario2 FROM Reproductor_musica.Sigue WHERE usuario1 = ?";
-	
+	private final static String GET_ID_TRANSMISION_QUERY = "SELECT id FROM Reproductor_musica.TransmisionVivo WHERE nombre = ?";
+
 	
 	// -------------------------------------------------------------------------------
 	
@@ -101,7 +102,7 @@ public class TransmisionDAO {
 	}
 	
 	// -------------------------------------------------------------------------------
-	
+
 	/*
 	 * Parametros: nombre de la transmision, descripción, id del usuario que la inicia
 	 * Devuelve: null en caso de error, un dato de tipo Transmision con el id de la misma, 
@@ -109,7 +110,6 @@ public class TransmisionDAO {
 	 * 			 el id del usuario y la URL de la estación asociada.
 	*/
 	public static Transmision iniciar(String nombre, String descripcion, int usuario) {
-		System.out.println("ENTROOOOOO");
 		try {
 			Connection conn = ConnectionManager.getConnection();
 						
@@ -193,6 +193,33 @@ public class TransmisionDAO {
 	}
 	
 	/*
+	 * Par�metros: id del usuario
+	 * Devuelve: id de la transmisi�n
+	 */
+	public static int getIdTransmision(String nombre) {
+		int id = -1;
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(GET_ID_TRANSMISION_QUERY);
+			ps.setString(1, nombre);
+			ResultSet rs = ps.executeQuery();
+
+			while(rs.next()){
+				id = rs.getInt(1);
+			}
+			
+			ConnectionManager.releaseConnection(conn);
+			
+		} catch(SQLException se) {
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return id;
+	}
+	
+	/*
 	 * Parametros: id de la transmision utilizada, URL de la estacion asociada 
 	 * Devuelve: false en caso de error, true si se ha eliminado la transmision correctamente
 	*/
@@ -270,7 +297,6 @@ public class TransmisionDAO {
 	public static List<Transmision> getTransmisionPorNombre(String nombre) {
 		List<Transmision> directos = new ArrayList<Transmision>();
 		try {
-
 			Connection conn = ConnectionManager.getConnection();
 			PreparedStatement ps = conn.prepareStatement(GET_TRANSM_NOMBRE_QUERY);
             
@@ -364,4 +390,3 @@ public class TransmisionDAO {
 		return directos;
 	}
 }
-
