@@ -24,13 +24,16 @@ public class TransmisionDAO {
 			
 	private final static String INSERT_ESTACION_QUERY = "INSERT INTO Reproductor_musica.Estacion (url, libre) VALUES (?,?)";
 	private final static String INSERT_TRANSM_QUERY = "INSERT INTO Reproductor_musica.TransmisionVivo (nombre, descripcion, activa, usuario, estacion) VALUES (?,?,?,?,?)";
-	private final static String GET_ESTACION_QUERY = "SELECT id, url FROM Reproductor_musica.Estacion WHERE libre = 0 ORDER BY id DESC LIMIT 1";
-	private final static String GET_TRANSM_QUERY = "SELECT id FROM Reproductor_musica.TransmisionVivo ORDER BY id DESC LIMIT 1";
+	private final static String GET_ESTACION_QUERY = "SELECT id FROM Reproductor_musica.Estacion WHERE libre = 1 AND url = ? LIMIT 1";
+	private final static String GET_URLESTACIONLIBRE_QUERY = "SELECT DISTINCT url FROM Reproductor_musica.Estacion WHERE libre = 1";
+	private final static String GET_TRANSM_QUERY = "SELECT id FROM Reproductor_musica.TransmisionVivo WHERE estacion = ? ORDER BY id DESC LIMIT 1";
+	private final static String GET_IDESTACION_QUERY = "SELECT estacion FROM Reproductor_musica.TransmisionVivo WHERE id = ?";
 			
 	private final static String UPDATE_NOM_QUERY = "UPDATE Reproductor_musica.TransmisionVivo SET nombre=? WHERE id = ?";
 	private final static String UPDATE_DES_QUERY = "UPDATE Reproductor_musica.TransmisionVivo SET descripcion=? WHERE id = ?";
-	private final static String UPDATE_ESTACION_QUERY = "UPDATE Reproductor_musica.Estacion SET libre=? WHERE url = ?";
+	private final static String UPDATE_ESTACION_QUERY = "UPDATE Reproductor_musica.Estacion SET libre=? WHERE id = ?";
 	private final static String UPDATE_TRANSM_QUERY = "UPDATE Reproductor_musica.TransmisionVivo SET activa=? WHERE id = ?";
+	private final static String UPDATE_TRANSM2_QUERY = "UPDATE Reproductor_musica.TransmisionVivo SET estacion=? WHERE id = ?";
 	
 	private final static String DELETE_ESTACION_QUERY =	"DELETE FROM Reproductor_musica.Estacion WHERE url = ?";
 	private final static String DELETE_TRANSM_QUERY =	"DELETE FROM Reproductor_musica.TransmisionVivo WHERE id = ?";
@@ -38,13 +41,17 @@ public class TransmisionDAO {
 	private final static String GET_TRANSM_NOMBRE_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
 															+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
 															+ "WHERE transmision.estacion = estacion.id AND transmision.nombre = ?";
+	private final static String GET_TRANSM_ALL_QUERY = "SELECT * FROM Reproductor_musica.TransmisionVivo transmision"
+			+ "WHERE transmision.estacion = estacion.id AND transmision.nombre = ?";
+
+	
 	private final static String GET_TRANSM_ID_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
 			+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
 			+ "WHERE transmision.estacion = estacion.id AND transmision.id = ?";
 	
 	private final static String GET_TRANSM_USERS_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
 															+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
-															+ "WHERE transmision.estacion = estacion.id AND transmision.activa = 1 AND transmision.usuario = ?";
+															+ "WHERE transmision.estacion = estacion.id AND transmision.usuario = ?";
 	private final static String GET_USERS_SEGUIDOS_QUERY = "SELECT usuario2 FROM Reproductor_musica.Sigue WHERE usuario1 = ?";
 	private final static String GET_ID_TRANSMISION_QUERY = "SELECT id FROM Reproductor_musica.TransmisionVivo WHERE nombre = ?";
 
@@ -104,33 +111,56 @@ public class TransmisionDAO {
 	// -------------------------------------------------------------------------------
 
 	/*
+	 * Parametros: Ninguno
+	 * Devuelve: Una lista con las URL de todas las estaciones libres 
+	*/
+	public static List<String> getURLestacionesLibres() {
+		List<String> estacionesURL = new ArrayList<String>();
+		try {
+			
+			Connection conn = ConnectionManager.getConnection();
+			
+			PreparedStatement ps = conn.prepareStatement(GET_URLESTACIONLIBRE_QUERY);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				estacionesURL.add(rs.getString("url"));
+			}
+			
+		} catch(SQLException se) {
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		return estacionesURL;
+	}
+	
+	/*
 	 * Parametros: nombre de la transmision, descripción, id del usuario que la inicia
 	 * Devuelve: null en caso de error, un dato de tipo Transmision con el id de la misma, 
 	 * 			 el nombre, la descipcion, un boleano para indicar que esta activa, 
 	 * 			 el id del usuario y la URL de la estación asociada.
 	*/
-	public static Transmision iniciar(String nombre, String descripcion, int usuario) {
+	public static Transmision iniciar(String nombre, String descripcion, int usuario, String URL) {
 		try {
 			Connection conn = ConnectionManager.getConnection();
 						
 			PreparedStatement ps = conn.prepareStatement(GET_ESTACION_QUERY);
+			ps.setString(1, URL);
 			ResultSet rs = ps.executeQuery();
 			int idTransmision = 0;
 			int idEstacion = 0; 
-			String URL = null;
 			while(rs.next()) {
 				idEstacion = rs.getInt("id");
-				URL = rs.getString("url");
 			}
 			
-			if (URL == null) {
+			if (idEstacion == 0) {
 				return null;
 			}
 			else {
 				System.out.println("PASADO GET");
 				ps = conn.prepareStatement(UPDATE_ESTACION_QUERY);
 				ps.setInt(1, 0);
-				ps.setString(2, URL);
+				ps.setInt(2, idEstacion);
 				ps.executeUpdate();
 				System.out.println("PASADO UPDATE");
 				ps = conn.prepareStatement(INSERT_TRANSM_QUERY);
@@ -142,6 +172,7 @@ public class TransmisionDAO {
 				ps.executeUpdate();
 							
 				ps = conn.prepareStatement(GET_TRANSM_QUERY);
+				ps.setInt(1, idEstacion);
 				rs = ps.executeQuery(); 
 				while(rs.next()) idTransmision = rs.getInt("id");
 			}
@@ -170,14 +201,26 @@ public class TransmisionDAO {
 		
 		try {
 			Connection conn = ConnectionManager.getConnection();
-			PreparedStatement ps = conn.prepareStatement(UPDATE_TRANSM_QUERY);
+			
+			PreparedStatement ps = conn.prepareStatement(GET_IDESTACION_QUERY);
+			ps.setInt(1, idTransmision);
+			ResultSet rs = ps.executeQuery();
+			int idEstacion = 0;
+			while(rs.next()) idEstacion = rs.getInt("estacion");
+			
+			ps = conn.prepareStatement(UPDATE_TRANSM2_QUERY);
+			ps.setString(1, null);
+			ps.setInt(2, idTransmision);
+			ps.executeUpdate();
+			
+			ps = conn.prepareStatement(UPDATE_TRANSM_QUERY);
 			ps.setInt(1, 0);
 			ps.setInt(2, idTransmision);
 			ps.executeUpdate();
 			
 			ps = conn.prepareStatement(UPDATE_ESTACION_QUERY);
 			ps.setInt(1, 1);
-			ps.setString(2, url);
+			ps.setInt(2, idEstacion);
 			ps.executeUpdate();
 			
 			ConnectionManager.releaseConnection(conn);
@@ -227,13 +270,20 @@ public class TransmisionDAO {
 		
 		try {
 			Connection conn = ConnectionManager.getConnection();
-			PreparedStatement ps = conn.prepareStatement(DELETE_TRANSM_QUERY);
+			
+			PreparedStatement ps = conn.prepareStatement(GET_IDESTACION_QUERY);
+			ps.setInt(1, idTransmision);
+			ResultSet rs = ps.executeQuery();
+			int idEstacion = 0;
+			while(rs.next()) idEstacion = rs.getInt("estacion");
+			
+			ps = conn.prepareStatement(DELETE_TRANSM_QUERY);
 			ps.setInt(1, idTransmision);
 			ps.executeUpdate();
 			
 			ps = conn.prepareStatement(UPDATE_ESTACION_QUERY);
 			ps.setInt(1, 1);
-			ps.setString(2, url);
+			ps.setInt(2, idEstacion);
 			ps.executeUpdate();
 			
 			ConnectionManager.releaseConnection(conn);
@@ -301,6 +351,38 @@ public class TransmisionDAO {
 			PreparedStatement ps = conn.prepareStatement(GET_TRANSM_NOMBRE_QUERY);
             
 			ps.setString(1, nombre);
+			ResultSet rs = ps.executeQuery();
+
+			while(rs.next()){
+				Transmision result = new Transmision(rs.getInt("id"), rs.getString("nombre"), 
+									rs.getString("descripcion"), rs.getBoolean("activa"), 
+									rs.getInt("usuario"), rs.getString("url"));
+                directos.add(result);
+			}
+			
+			ConnectionManager.releaseConnection(conn);
+			
+		} catch(SQLException se) {
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return directos;
+	}
+	
+	/*
+	 * Parametros: 
+	 * Devuelve: una lista de datos de tipo Transmision 
+	 * 			 (id de la misma, nombre, descipcion, boleano que indica si esta activa, 
+	 * 			 id del usuario, URL de la estación asociada)
+	*/
+	public static List<Transmision> getTodasTransmisiones() {
+		List<Transmision> directos = new ArrayList<Transmision>();
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(GET_TRANSM_ALL_QUERY);
+            
 			ResultSet rs = ps.executeQuery();
 
 			while(rs.next()){
@@ -390,3 +472,4 @@ public class TransmisionDAO {
 		return directos;
 	}
 }
+
