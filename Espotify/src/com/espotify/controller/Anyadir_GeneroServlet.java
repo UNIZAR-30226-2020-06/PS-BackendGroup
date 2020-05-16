@@ -11,18 +11,19 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.espotify.dao.FavoritosDAO;
+import com.espotify.dao.GeneroDAO;
 import com.espotify.model.ListaReproduccion;
 
 /**
  * Servlet implementation Servlet
  */
-public class AnyadirAudio_FavoritosServlet extends HttpServlet {
+public class Anyadir_GeneroServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public AnyadirAudio_FavoritosServlet() {
+    public Anyadir_GeneroServlet() {
         super();
     }
 
@@ -32,21 +33,20 @@ public class AnyadirAudio_FavoritosServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		HttpSession session = request.getSession();
-		int usuario = Integer.valueOf((String) session.getAttribute("id"));
-		String audio = request.getParameter("idAudio");
-		int idAudio = Integer.valueOf(audio);
+		String nombre = request.getParameter("nombre");
+		String tipo = request.getParameter("tipo");
 		
-		Boolean anyadida = new FavoritosDAO().anyadirAudio(usuario, idAudio);
+		Boolean anyadido = new GeneroDAO().anyadir(nombre, tipo);
 		
-		if (anyadida) {
-			log("La cancion se ha a�adido correctamente");
+		if (anyadido) {
+			log("El genero se ha a�adido correctamente");
 		} else {
-			log("La cancion no se ha podido a�adir");
+			log("El genero no se ha podido a�adir");
 		}
 		
-		session.setAttribute("anyadida?", anyadida);
+		session.setAttribute("anyadido?", anyadido);
 		
-		request.getRequestDispatcher("obtener_info_fav").forward(request, response);
+		//request.getRequestDispatcher("obtener_info_fav").forward(request, response);
 		//RequestDispatcher dispatcher=request.getRequestDispatcher("audio.jsp");
         //dispatcher.forward(request, response);
 	}

@@ -10,19 +10,88 @@ import com.espotify.model.ConnectionManager;
 import com.espotify.model.Genero;
 
 public class GeneroDAO {
+	private final static String INSERT_QUERY = "INSERT INTO Reproductor_musica.Genero (nombre,tipo) VALUES (?,?)";
+	private final static String DELETE_QUERY = "DELETE FROM Reproductor_musica.Genero WHERE id = ?";
+	private final static String UPDATE_NOMBRE_QUERY = "UPDATE Reproductor_musica.Genero SET nombre = ? WHERE id = ?";
 	private final static String GET_GENERO_MUSICA = "SELECT g.id, g.nombre FROM Reproductor_musica.Genero g WHERE g.tipo = 'cancion'";
 	private final static String GET_NOMBRE_GENERO_MUSICA = "SELECT g.nombre FROM Reproductor_musica.Genero g WHERE g.id = ? AND g.tipo = 'cancion'";
 
 	private final static String GET_ID_GENERO_PODCAST = "SELECT g.id FROM Reproductor_musica.Genero g WHERE g.tipo = 'podcast'";
 	private final static String GET_NOMBRE_GENERO_PODCAST = "SELECT g.nombre FROM Reproductor_musica.Genero g WHERE g.id = ? AND g.tipo = 'podcast'";
 	private final static String GET_ID_GENERO = "SELECT g.id FROM Reproductor_musica.Genero g WHERE g.nombre = ?";
-
 	
 	private final static String CANCION = "cancion";
 	private final static String PODCAST = "podacast";
 	private final static String GET_GENERO_CAPITULO = "SELECT g.id, g.nombre FROM Reproductor_musica.Genero g WHERE g.tipo = 'capituloPodcast'";
 	private final static String CAPITULO = "capituloPodcast";
 
+	// Devuelve True si se ha añadido un nuevo genero correctamente
+	public static boolean anyadir(String nombre, String tipo) {
+		try {
+			// Comprobar tipo de genero valido
+			if (!tipo.equals("cancion") && !tipo.equals("podcast") && !tipo.equals("capituloPodcast")) {
+				return false;
+			}
+			
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(INSERT_QUERY);
+			ps.setString(1, nombre);
+			ps.setString(2, tipo);
+			ps.executeUpdate();
+			
+			ConnectionManager.releaseConnection(conn);
+			return true;
+		} catch(SQLException se) {
+			System.out.println(se.getMessage());
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return false;
+	}
+	
+	// Devuelve True si se ha eliminado el genero correctamente
+	public static boolean eliminar(int idGenero) {
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(DELETE_QUERY);
+			ps.setInt(1, idGenero);
+			ps.executeUpdate();
+			
+			ConnectionManager.releaseConnection(conn);
+			return true;
+		} catch(SQLException se) {
+			System.out.println(se.getMessage());
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return false;
+	}
+	
+	// Devuelve True si se ha eliminado el genero correctamente
+	public static boolean cambiarNombre(int idGenero, String newName) {
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(UPDATE_NOMBRE_QUERY);
+			ps.setString(1, newName);
+			ps.setInt(1, idGenero);
+			ps.executeUpdate();
+			
+			ConnectionManager.releaseConnection(conn);
+			return true;
+		} catch(SQLException se) {
+			System.out.println(se.getMessage());
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return false;
+	}
+	
 	public ArrayList<Genero> obtenerGeneroMusica() {
 		ArrayList<Genero> generos = new ArrayList<Genero>();
 		Connection conn;
