@@ -51,7 +51,7 @@ public class TransmisionDAO {
 	
 	private final static String GET_TRANSM_USERS_QUERY = "SELECT transmision.id id, transmision.nombre nombre, transmision.descripcion descripcion, transmision.activa activa, transmision.usuario usuario, estacion.url url " 
 															+ "FROM Reproductor_musica.TransmisionVivo transmision, Reproductor_musica.Estacion estacion "
-															+ "WHERE transmision.estacion = estacion.id AND transmision.usuario = ?";
+															+ "WHERE transmision.estacion = estacion.id AND transmision.activa = 1 AND transmision.usuario = ?";
 	private final static String GET_USERS_SEGUIDOS_QUERY = "SELECT usuario2 FROM Reproductor_musica.Sigue WHERE usuario1 = ?";
 	private final static String GET_ID_TRANSMISION_QUERY = "SELECT id FROM Reproductor_musica.TransmisionVivo WHERE nombre = ?";
 
