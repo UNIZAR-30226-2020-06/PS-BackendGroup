@@ -24,12 +24,20 @@ import java.security.NoSuchAlgorithmException;
 public class ListaReproduccionDAO {
 	private final static String ATRIBUTO_PODCAST = "Podcast";
 	private final static String INSERT_QUERY = "INSERT INTO Reproductor_musica.ListasRep (usuario, nombre, descripcion, imagen, tipo) VALUES (?,?,?,?,?)";
+	
 	private final static String UPDATE_NOM_QUERY = "UPDATE Reproductor_musica.ListasRep SET nombre=? WHERE nombre = ? AND usuario = ? AND tipo = ?";
 	private final static String UPDATE_DES_QUERY = "UPDATE Reproductor_musica.ListasRep SET descripcion=? WHERE nombre = ? AND usuario = ? AND tipo = ?";
-	private final static String UPDATE_IMG_QUERY = "UPDATE Reproductor_musica.ListasRep SET imagen=? WHERE nombre = ? AND usuario = ? AND tipo = ?";
+	private final static String UPDATE_IMG_QUERY = "UPDATE Reproductor_musica.ListasRep SET imagen = ? WHERE nombre = ?";
+	private final static String UPDATEID_NOM_QUERY = "UPDATE Reproductor_musica.ListasRep SET nombre=? WHERE id = ?";
+	private final static String UPDATEID_DES_QUERY = "UPDATE Reproductor_musica.ListasRep SET descripcion=? WHERE id = ?";
+	private final static String UPDATEID_IMG_QUERY = "UPDATE Reproductor_musica.ListasRep SET imagen = ? WHERE id = ?";
+	
 	private final static String DELETE_QUERY =	"DELETE FROM Reproductor_musica.ListasRep WHERE nombre = ? AND usuario = ? AND tipo = ?";
+	private final static String DELETEID_QUERY =	"DELETE FROM Reproductor_musica.ListasRep WHERE id = ?";
+	
 	private final static String GETINFOLIST_QUERY = "SELECT * FROM Reproductor_musica.ListasRep WHERE nombre = ? AND usuario = ? AND tipo = ?";
 	private final static String GETINFOLISTID_QUERY = "SELECT * FROM Reproductor_musica.ListasRep WHERE id = ?";
+	
 	private final static String GETAUDIOS_QUERY = "SELECT audio.id id, audio.url url, audio.titulo titulo, user.nombre autor, genero.nombre genero FROM Reproductor_musica.ListasRep lista,"  
 													+ "Reproductor_musica.Contiene cont, Reproductor_musica.Audio audio, Reproductor_musica.Genero genero, Reproductor_musica.Usuario user " 
 													+ "WHERE lista.id = cont.lista AND cont.audio = audio.id AND audio.genero = genero.id AND audio.usuario = user.id AND "
@@ -38,13 +46,18 @@ public class ListaReproduccionDAO {
 													+ "Reproductor_musica.Contiene cont, Reproductor_musica.Audio audio, Reproductor_musica.Genero genero, Reproductor_musica.Usuario user " 
 													+ "WHERE lista.id = cont.lista AND cont.audio = audio.id AND audio.genero = genero.id AND audio.usuario = user.id AND "
 													+ "lista.id = ? ORDER BY audio.titulo";
+	
 	private final static String SHOWLISTS_QUERY = "SELECT * FROM Reproductor_musica.ListasRep WHERE usuario = ? AND tipo = ? ORDER BY nombre";
 	private final static String SHOW_ALL_LISTS_QUERY = "SELECT * FROM Reproductor_musica.ListasRep WHERE tipo = ? ORDER BY nombre";
+	
 	private final static String INSERTAUDIO_QUERY =  "INSERT INTO Reproductor_musica.Contiene (audio, lista) VALUES (?,?)";
 	private final static String DELETE_AUDIO_QUERY = "DELETE FROM Reproductor_musica.Contiene WHERE audio = ? AND lista = ?";
+	
 	private final static String GETLIST_ID_QUERY = "SELECT id FROM Reproductor_musica.ListasRep WHERE nombre = ?";
 	private final static String GETNAMES_QUERY = "SELECT nombre FROM Reproductor_musica.ListasRep WHERE usuario = ? AND tipo = ?";
 	private final static String GETALL_PODCAST = "SELECT * FROM Reproductor_musica.ListasRep WHERE tipo = " + ATRIBUTO_PODCAST;
+	private static final String ALMACEN_LISTAS = "https://espotify.ddns.net/almacen-mp3/almacen-img/listas/";
+
 	
 	public static boolean crear(int usuario, String nombre, String descripcion, String tipo) {
 		try {
@@ -64,6 +77,12 @@ public class ListaReproduccionDAO {
             
 			ps.executeUpdate();
 			
+			PreparedStatement ps2 = conn.prepareStatement(UPDATE_IMG_QUERY);
+			String rutaImagen = ALMACEN_LISTAS + obtenerIdLista(nombre) + ".jpg";
+			ps2.setString(1, rutaImagen);
+			ps2.setString(2, nombre);
+			ps2.executeUpdate();
+			
 			ConnectionManager.releaseConnection(conn);
 			return true;
 			
@@ -77,7 +96,7 @@ public class ListaReproduccionDAO {
 	}
 	
 	public static boolean crear(String usuario, String nombre, String descripcion, String tipo) {
-
+		
 		
 		try {
 			Connection conn = ConnectionManager.getConnection();
@@ -95,6 +114,12 @@ public class ListaReproduccionDAO {
             }
             
 			ps.executeUpdate();
+			
+			PreparedStatement ps2 = conn.prepareStatement(UPDATE_IMG_QUERY);
+			String rutaImagen = ALMACEN_LISTAS + obtenerIdLista(nombre) + ".jpg";
+			ps2.setString(1, rutaImagen);
+			ps2.setString(2, nombre);
+			ps2.executeUpdate();
 			
 			ConnectionManager.releaseConnection(conn);
 			return true;
@@ -142,6 +167,29 @@ public class ListaReproduccionDAO {
             ps.setInt(2, usuario);
             ps.setString(3, tipo);
 
+			ps.executeUpdate();
+			
+			ConnectionManager.releaseConnection(conn);
+			System.out.println("SALI BN");
+			return true;
+			
+		} catch(SQLException se) {
+			System.out.println(se.getMessage());
+			System.out.println("SALI MAL");
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+	
+	public static boolean borrar(int idLista) {
+		System.out.println("ENTRAREEEEE");
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(DELETEID_QUERY);
+            
+			ps.setInt(1, idLista);
 			ps.executeUpdate();
 			
 			ConnectionManager.releaseConnection(conn);
@@ -321,6 +369,50 @@ public class ListaReproduccionDAO {
 			return cambiada;
 			
 		} catch(SQLException se) {
+			se.printStackTrace();
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+			return false;
+		}
+	}
+	
+	public static boolean cambiar_info(String nombreNew, String descripcion, String imagen, int idLista) {
+		System.out.println("VOY A CAMBIAR INFO");
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps;
+			boolean cambiada = false;
+
+			if(nombreNew != null && !nombreNew.equals("")) {
+				ps = conn.prepareStatement(UPDATEID_NOM_QUERY);
+				
+				ps.setString(1, nombreNew);
+                ps.setInt(2, idLista);
+				ps.executeUpdate();
+				cambiada = true;
+			}
+			if(descripcion != null && !descripcion.equals("")) {
+				ps = conn.prepareStatement(UPDATEID_DES_QUERY);
+				
+				ps.setString(1, descripcion);
+                ps.setInt(2, idLista);
+				ps.executeUpdate();
+				cambiada = true;
+			}
+			if(imagen != null && !imagen.equals("")) {
+				ps = conn.prepareStatement(UPDATEID_IMG_QUERY);
+				
+				ps.setString(1, imagen);
+                ps.setInt(2, idLista);
+				ps.executeUpdate();			
+				cambiada = true;
+			}
+			ConnectionManager.releaseConnection(conn);
+			return cambiada;
+			
+		} catch(SQLException se) {
+			System.out.println("SQL EXCEPTIONNNNN");
 			se.printStackTrace();
 			return false;
 		} catch(Exception e) {
