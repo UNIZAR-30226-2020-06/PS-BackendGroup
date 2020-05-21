@@ -37,6 +37,7 @@ public class UsuarioDAO {
 	private final static String USER_GETINFO_QUERY = "SELECT nombre, descripcion, mail, imagen FROM Reproductor_musica.Usuario WHERE id = ?";
 	private final static String USER_GETIMAGE_BLOB_QUERY = "SELECT imagen FROM Reproductor_musica.Usuario WHERE mail = ?";
 	private final static String USER_GETALL_QUERY = "SELECT * FROM Reproductor_musica.Usuario";
+	private final static String NUM_SEGUIDORES_QUERY = "SELECT COUNT(*) sumaLikes FROM Reproductor_musica.Sigue sigue WHERE sigue.usuario2 = ? ";
 	private final static String ALMACEN_IMG_URL = "https://espotify.ddns.net/almacen-mp3/almacen-img/usuarios/";
 	
 	/**
@@ -321,7 +322,7 @@ public class UsuarioDAO {
 			ResultSet rs = ps.executeQuery();
 
 			if(rs.first()){
-				result = new Usuario(rs.getString("nombre"), rs.getString("descripcion"), rs.getString("mail"), null, rs.getString("imagen"));
+				result = new Usuario(rs.getString("nombre"), rs.getString("descripcion"), rs.getString("mail"), String.valueOf(id), rs.getString("imagen"));
 			}
 			
 			ConnectionManager.releaseConnection(conn);
@@ -430,6 +431,28 @@ public class UsuarioDAO {
 		
 		return listaUsuarios;
 
+	}
+	
+	public static int obtenerNumSeguidores(int id) {
+		int numSeguidores = 0;
+		try {
+			Connection conn = ConnectionManager.getConnection();
+			PreparedStatement ps = conn.prepareStatement(NUM_SEGUIDORES_QUERY);
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+
+			if(rs.first()){
+				numSeguidores = rs.getInt("sumaLikes");
+			}
+			
+			ConnectionManager.releaseConnection(conn);
+		} catch(SQLException se) {
+			se.printStackTrace();
+		} catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		
+		return numSeguidores;
 	}
 
 }
